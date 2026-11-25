@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071612">
+<meta name="description" content="用手势、音乐和彩色星光装点你的圣诞树。">
+<title>冬夜星树 · Winter Lights</title>
+<style>
+:root{color-scheme:dark;--text:#f4f2e8;--muted:#9cab9f;--line:#293d32;--green:#c8edac;--panel:#101f19;--background:#081410;font-family:"Microsoft YaHei",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 36% 0%,#11251b,transparent 56%),var(--background);color:var(--text)}
+button,input,select{font:inherit}
+button,select,.upload{cursor:pointer}
+button,select{color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,.upload:focus-within,a:focus-visible{outline:2px solid #d9f6be;outline-offset:3px}
+[hidden]{display:none!important}
+.top{height:79px;border-bottom:1px solid #25392e;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4vw,64px);background:#091611}
+.brand{text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px;font-size:21px;font-weight:750;letter-spacing:.06em}
+.brand small{display:block;color:#abc2aa;font-size:9px;font-weight:650;letter-spacing:.23em;margin-top:3px}
+.brand-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#293c2a;color:#e6d899}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+.brand-icon svg{width:31px;height:31px}
+button{border:1px solid var(--line);border-radius:9px;background:#182820;min-height:40px}
+button:hover,.upload:hover,select:hover{border-color:#7a997d;background:#273d2e}
+.camera{display:flex;align-items:center;gap:9px;padding:0 16px;font-size:14px;font-weight:700;height:43px}
+.camera svg{width:19px;height:19px}
+.strong{background:#c8edac;color:#152415;border-color:#c8edac}
+.strong:hover{color:#142416;background:#def4c9;border-color:#def4c9}
+.layout{width:min(100%,1600px);margin:auto;padding:24px clamp(18px,3vw,45px) 32px;display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:18px;align-items:start}
+.stage{position:relative;isolation:isolate;height:clamp(660px,calc(100svh - 126px),1020px);min-width:0;overflow:hidden;background:radial-gradient(ellipse at 50% 55%,#0b281e,#061411 72%);border:1px solid #304333;border-radius:20px}
+#scene{width:100%;height:100%;position:absolute;inset:0}
+.stage-heading{position:absolute;top:clamp(24px,4vw,46px);left:clamp(19px,4vw,46px);pointer-events:none}
+.eyebrow{color:#dfcb88;font-size:10px;font-weight:700;letter-spacing:.22em}
+h1{margin:12px 0 4px;font-family:"Songti SC","SimSun",Georgia,serif;font-size:clamp(39px,5.6vw,82px);font-weight:600;line-height:1.06;letter-spacing:.07em;text-shadow:0 2px 22px #061411}
+.stage-heading p{font:italic clamp(18px,2.1vw,30px) Georgia,serif;color:#d1c58e;margin:6px 0}
+.stage-status{position:absolute;top:25px;right:24px;padding:8px 11px;border:1px solid #415341;border-radius:99px;background:#0a1813dd;color:#cdd8c9;font-size:12px;display:flex;align-items:center;gap:7px}
+.stage-status i{width:6px;height:6px;border-radius:50%;background:#a6df9d;box-shadow:0 0 10px #8fb98e}
+.motion{position:absolute;top:65px;right:24px;padding:0 10px;min-height:34px;background:#0a1813dd;color:#d9e7d2;font-size:12px}
+.script-message{position:absolute;inset:44% 16px auto;text-align:center;color:#f4f2e8}
+.stage-actions{position:absolute;inset:auto 0 23px;margin:auto;width:max-content;max-width:95%;display:flex;gap:5px;padding:5px;background:#0b1713ed;border:1px solid #374b3e;border-radius:13px}
+.stage-actions button{padding:0 14px;min-height:38px;display:flex;align-items:center;gap:7px;font-size:14px;border-color:transparent;background:transparent;white-space:nowrap}
+.stage-actions button:hover,.stage-actions button[aria-pressed=true]{background:#263c2c;color:#d2efb6}
+.stage-actions svg{width:17px;height:17px}
+.camera-box{position:absolute;left:20px;bottom:21px;width:min(25%,160px);aspect-ratio:4/3;overflow:hidden;border-radius:12px;border:1px solid #718674;background:#000}
+.camera-box video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.sidebar{display:grid;gap:14px}
+.panel{min-width:0;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+h2{font-size:16px;display:flex;align-items:center;gap:9px;margin:0 0 13px;letter-spacing:.035em}
+.section-icon{width:26px;height:26px;display:grid;place-items:center;color:#dce3a6;background:#243729;border-radius:7px;font-size:16px}
+.gesture-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.gesture-grid div{display:grid;justify-items:center;gap:4px;text-align:center;background:#0c1914;border:1px solid #263b2f;border-radius:10px;padding:10px 2px 9px;font-size:14px}
+.gesture-grid div.active{background:#293f2e;border-color:#89b179}
+.gesture-grid svg{width:29px;height:29px;color:#e7d397;margin-bottom:2px}
+small,.hint{color:var(--muted)}
+.gesture-grid small,.hint,.player small{font-size:12px}
+.hint{line-height:1.55;margin:10px 0 0}
+.field{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;margin-top:9px;min-height:34px}
+.field label{color:#d9e0d5}
+select{appearance:none;min-width:128px;border:1px solid #34483b;border-radius:7px;background:#0d1914;padding:6px 27px 6px 10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m3 4 3 3 3-3' fill='none' stroke='%23b9cbb6' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+select:hover{background-color:#253a2b}
+.range input{flex:1;min-width:40px;accent-color:#a5ca90}
+.range output{width:36px;text-align:right;font-size:12px;color:#ccdbbd}
+.player{display:flex;align-items:center;gap:9px}
+.player div{flex:1;min-width:0}
+.player b,.player small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player b{font-size:14px}.player small{margin-top:4px}
+.play{border:0;background:#d5e8ab;color:#172417;min-height:39px;width:39px;flex:none;font-size:15px}
+.play:hover{background:#e5f6c6}
+.upload{position:relative;border:1px solid #3a5141;padding:6px 9px;border-radius:7px;font-size:13px;color:#dce8d7;display:inline-flex;align-items:center;justify-content:center;min-height:32px;white-space:nowrap}
+.upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.photo-count{margin-left:auto;color:#a7bbac;font-size:12px;font-weight:500}
+.add{width:100%;border-style:dashed;min-height:37px;color:#d2e9c5}
+.thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-height:150px;overflow:auto}
+.thumbs:not(:empty){margin-bottom:10px}
+.thumb{position:relative;aspect-ratio:1;border-radius:7px;overflow:hidden;background:#091611}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button:first-child{position:absolute;inset:0;width:100%;padding:0;border:0;border-radius:0}
+.thumb .remove{position:absolute;top:2px;right:2px;min-height:21px;width:21px;padding:0;border:0;border-radius:50%;background:#081510de;color:white;line-height:1}
+dialog{width:min(90vw,700px);padding:0;border:0;overflow:visible;background:transparent;color:var(--text)}
+dialog::backdrop{background:#020806da}
+dialog.photo-flight::backdrop{animation:photo-backdrop 680ms ease-out}
+@keyframes photo-backdrop{0%,40%{opacity:0}100%{opacity:1}}
+.photo-card{position:relative;padding:14px;border:1px solid #536c53;border-radius:15px;background:#101e18}
+.photo-spark{position:fixed;top:0;left:0;width:34px;height:34px;margin:-17px 0 0 -17px;z-index:1;pointer-events:none;opacity:0;border-radius:50%;background:radial-gradient(circle,#fffbdc 0 13%,#ffe39a 15%,#dba84c88 31%,#dba84c00 72%)}
+#large-photo{display:block;width:100%;max-height:70svh;object-fit:contain;background:#060d0a;border-radius:8px}
+.close{position:absolute;top:20px;right:20px;width:37px;font-size:22px;background:#0a1713e8}
+.album-controls{display:flex;justify-content:center;align-items:center;gap:15px;padding-top:10px}
+.album-controls button{min-height:35px;min-width:42px;font-size:22px}
+@media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr) 290px;gap:12px;padding-inline:15px}.stage-status{top:16px;right:16px}.panel{padding:13px}.stage-heading{top:48px}}
+@media(max-width:680px){.top{height:64px;padding-inline:14px}.brand{font-size:17px;gap:8px}.brand-icon{width:37px;height:37px}.camera{padding-inline:10px}.layout{display:block;padding:12px 12px 24px}.stage{height:clamp(500px,73svh,760px);border-radius:15px}.stage-heading{top:24px;left:17px}.stage-heading h1{font-size:clamp(34px,8.5vw,59px)}.stage-status{font-size:10px;top:12px;right:12px;padding:6px 8px}.stage-actions{bottom:15px}.camera-box{left:10px;bottom:75px}.sidebar{margin-top:12px;grid-template-columns:minmax(0,1fr);gap:10px}}
+@media(max-width:900px){.motion{top:54px;right:16px}}
+@media(max-width:680px){.motion{top:44px;right:12px;min-height:30px}}
+
+</style>
+<script type="module">
+const canvas = document.querySelector('#scene');
+const ctx = canvas.getContext('2d', { alpha: false });
+const tau = Math.PI * 2;
+const maxParticles = 4300;
+const palettes = {
+  pine: ['#3a9c67', '#69df95', '#b7fcc3', '#ffe7a0', '#85c58e', '#fff3d5'],
+  frost: ['#427eb3', '#67c4f2', '#c1f5ff', '#e8eaff', '#7dbddd', '#f5fcff'],
+  rose: ['#a44470', '#f579a9', '#ffc0d9', '#ffe5ad', '#e68fbd', '#fff2e2'],
+};
+const giftColors = {
+  classic: ['#813c37', '#522c2e', '#d08362', '#f1c87e'],
+  ice: ['#416f94', '#2a4964', '#77acd0', '#d0ecf2'],
+  pink: ['#9b496e', '#603146', '#d8799f', '#f6c9d3'],
+};
+const effects = { scattered: false, density: 3000, palette: 'pine', color: '#8fe8af', shape: 'glow', gift: 'classic', energy: 0 };
+let width, height, center, top, tall, ground, radius, mobile;
+let spread = 0;
+let photoSource;
+const random = (max = 1) => Math.random() * max;
+const mix = (a, b, t) => a + (b - a) * t;
+const particles = Array.from({ length: maxParticles }, (_, i) => {
+  const y = Math.pow(random(), .83);
+  const angle = random(tau);
+  const branch = 0.73 + 0.27 * ((y * 6.4) % 1);
+  const radius = Math.pow(y, .91) * branch * (0.17 + .83 * Math.sqrt(random()));
+  return {
+    y, x: Math.cos(angle) * radius, z: Math.sin(angle) * radius,
+    sx: random(1.92) - .96, sy: random(.9) - .43,
+    size: .35 + random(1.25) + (i % 57 === 0 ? 1.4 : 0),
+    phase: random(tau), color: Math.floor(random(6)), light: i % 49 === 0, index: i,
+  };
+});
+const particlesByColor = Array.from({ length: 6 }, (_, color) => particles.filter(p => p.color === color));
+const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
+const snow = Array.from({length: 82}, () => [random(), random(), random(1.7) + .3, random()]);
+const garland = Array.from({length: 180}, (_, i) => {
+  const y = i / 179;
+  const angle = y * tau * 6.55;
+  const r = Math.pow(y, .95);
+  return { y, x: Math.cos(angle) * r, z: Math.sin(angle) * r };
+});
+const ornaments = [
+  [.21, .08, '#fbbf76'], [.35, 2.19, '#f08483'], [.43, 4.48, '#ffdf9b'],
+  [.52, .77, '#ffe8ac'], [.60, 3.28, '#f2a7a0'], [.67, 5.31, '#ffcf83'],
+  [.71, 1.28, '#ef897e'], [.80, 2.63, '#ffd581'], [.86, 4.17, '#ed9993'],
+  [.90, .53, '#ffe5a2'], [.95, 5.74, '#ec8f7d'],
+];
+const backdrop = document.createElement('canvas');
+const backdropCtx = backdrop.getContext('2d', { alpha: false });
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const motionButton = document.querySelector('#motion');
+let paused = reducedMotion.matches;
+let userControlsMotion = false;
+let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
+let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
+
+function resize() {
+  const bounds = canvas.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
+  const wasMobile = mobile;
+  width = bounds.width;
+  height = bounds.height;
+  mobile = width < 600;
+  const ratio = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.6, Math.sqrt(1200000 / (width * height)));
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  if (mobile !== wasMobile) {
+    particleBudget = mobile ? 1550 : 2600;
+    samples = averageCost = averageStep = 0;
+  }
+  center = width * (width > 650 ? .55 : .51);
+  top = height * (width > 650 ? .235 : .27);
+  tall = height * .56;
+  ground = top + tall;
+  radius = Math.min(width * .40, tall * .64);
+  drawBackdrop();
+  invalidateScene();
+}
+
+function drawBackdrop() {
+  backdrop.width = canvas.width;
+  backdrop.height = canvas.height;
+  backdropCtx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+  const glow = backdropCtx.createRadialGradient(width * .52, height * .66, 0, width * .52, height * .66, height * .59);
+  glow.addColorStop(0, '#16382a');
+  glow.addColorStop(.52, '#0b2119');
+  glow.addColorStop(1, '#061511');
+  backdropCtx.fillStyle = glow;
+  backdropCtx.fillRect(0, 0, width, height);
+  for (const [x, y, size, brightness] of stars) {
+    backdropCtx.globalAlpha = .22 + .50 * brightness;
+    backdropCtx.fillStyle = size > 1.35 ? '#e2d09b' : '#a3baaa';
+    backdropCtx.fillRect(x * width, y * height, size, size);
+  }
+  const floor = backdropCtx.createRadialGradient(center, ground + 4, 0, center, ground + 4, radius * 1.15);
+  floor.addColorStop(0, '#3f6c49');
+  floor.addColorStop(1, '#3f6c4900');
+  backdropCtx.globalAlpha = .23;
+  backdropCtx.fillStyle = floor;
+  backdropCtx.fillRect(0, 0, width, height);
+  for (let ring = 0; ring < 6; ring++) {
+    backdropCtx.globalAlpha = .21 - ring * .023;
+    backdropCtx.strokeStyle = ring % 2 ? '#a09659' : '#b2ae71';
+    backdropCtx.beginPath();
+    backdropCtx.ellipse(center, ground + 11, radius * (.68 + ring * .12), 12 + ring * 6, 0, 0, tau);
+    backdropCtx.stroke();
+  }
+  backdropCtx.globalAlpha = 1;
+}
+
+function starPath(x, y, r, arms = 4, inner = .24) {
+  ctx.beginPath();
+  for (let i = 0; i < arms * 2; i++) {
+    const angle = i * Math.PI / arms - Math.PI / 2;
+    const length = i % 2 ? r * inner : r;
+    const px = x + Math.cos(angle) * length;
+    const py = y + Math.sin(angle) * length;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+function makeHalo(color) {
+  const sprite = document.createElement('canvas');
+  sprite.width = sprite.height = 96;
+  const paint = sprite.getContext('2d');
+  const gradient = paint.createRadialGradient(48, 48, 0, 48, 48, 48);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(1, color + '00');
+  paint.fillStyle = gradient;
+  paint.fillRect(0, 0, 96, 96);
+  return sprite;
+}
+const warmHalo = makeHalo('#ffe9a0');
+function drawHalo(x, y, size, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(warmHalo, x - size, y - size, 2 * size, 2 * size);
+}
+
+function drawGift(x, y, size, colors) {
+  const depth = size * .32;
+  ctx.fillStyle = colors[1];
+  ctx.fillRect(x, y - size * .74, size, size * .74);
+  ctx.fillStyle = colors[0];
+  ctx.fillRect(x + 1, y - size * .72, size - 2, size * .69);
+  ctx.fillStyle = colors[2];
+  ctx.beginPath();
+  ctx.moveTo(x, y - size * .74);
+  ctx.lineTo(x + depth, y - size * .97);
+  ctx.lineTo(x + size + depth, y - size * .97);
+  ctx.lineTo(x + size, y - size * .74);
+  ctx.fill();
+  ctx.fillStyle = colors[1];
+  ctx.beginPath();
+  ctx.moveTo(x + size, y);
+  ctx.lineTo(x + size + depth, y - size * .23);
+  ctx.lineTo(x + size + depth, y - size * .97);
+  ctx.lineTo(x + size, y - size * .74);
+  ctx.fill();
+  ctx.fillStyle = colors[3];
+  ctx.fillRect(x + size * .43, y - size * .76, size * .14, size * .76);
+  ctx.fillRect(x, y - size * .39, size, size * .07);
+  ctx.beginPath();
+  ctx.moveTo(x + size * .43, y - size * .74);
+  ctx.lineTo(x + size * .57, y - size * .74);
+  ctx.lineTo(x + depth + size * .57, y - size * .97);
+  ctx.lineTo(x + depth + size * .43, y - size * .97);
+  ctx.fill();
+  ctx.strokeStyle = colors[3];
+  ctx.lineWidth = Math.max(1, size * .05);
+  ctx.beginPath();
+  const bow = x + size * .64;
+  const top = y - size * .88;
+  ctx.moveTo(bow, top);
+  ctx.bezierCurveTo(bow - size * .6, top - size * .39, bow - size * .49, top + size * .07, bow, top);
+  ctx.bezierCurveTo(bow + size * .26, top - size * .49, bow + size * .55, top - size * .10, bow, top);
+  ctx.stroke();
+}
+
+function drawScene(t, dt) {
+  spread = paused ? Number(effects.scattered) : mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.4));
+  const energy = paused ? 0 : effects.energy;
+  const palette = palettes[effects.palette] || [effects.color, effects.color, effects.color, '#ffe7a0', effects.color, '#fff3d5'];
+  ctx.drawImage(backdrop, 0, 0, width, height);
+  const rotation = t * .76;
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const count = Math.min(effects.density, particleBudget);
+  const sizeBoost = Math.min(1.48, Math.sqrt(effects.density / count));
+  const shape = effects.shape;
+  let brightest = -Infinity;
+  for (const [color, group] of particlesByColor.entries()) {
+    ctx.fillStyle = palette[color];
+    for (const p of group) {
+      if (p.index >= count) break;
+      const spin = p.x * cos + p.z * sin;
+      const depth = p.z * cos - p.x * sin;
+      const wave = Math.sin(t * 1.55 + p.phase);
+      const x = center + mix(spin * radius * (1 + energy * .31), p.sx * width * .49 + wave * 19, spread);
+      const y = mix(top + p.y * tall + depth * tall * .135 + wave * energy * 10, height * .52 + p.sy * height + wave * 18, spread);
+      if (p.index === 0) photoSource = { x, y };
+      const s = p.size * (1 + energy * .57 + depth * .38) * sizeBoost + .28 * spread;
+      ctx.globalAlpha = Math.max(.13, Math.min(1, .62 + .22 * wave + .34 * depth + energy * .25));
+      if (shape === 'star' || p.light && shape === 'glow') {
+        drawSpark(x, y, s * (p.light ? 2.1 : 1.41), .24);
+      } else if (shape === 'diamond') {
+        drawSpark(x, y, s * 1.30, 0);
+      } else {
+        ctx.fillRect(x, y, s, s);
+      }
+    }
+  }
+  if (spread < .99) {
+    // The garland and prominent ornaments turn with the tree's particle cloud.
+    ctx.fillStyle = '#ffe6a0';
+    for (const point of garland) {
+      const depth = point.z * cos - point.x * sin;
+      const x = center + (point.x * cos + point.z * sin) * radius * (1 + energy * .31);
+      const y = top + point.y * tall + depth * tall * .138;
+      const s = 1.3 + Math.max(0, depth) * 3.1 + energy * 1.4;
+      ctx.globalAlpha = (1 - spread) * (.64 + depth * .34);
+      ctx.fillRect(x - s / 2, y - s / 2, s, s);
+    }
+    for (const [y, angle, color] of ornaments) {
+      const depth = Math.sin(angle - rotation);
+      const x = center + Math.cos(angle - rotation) * y * radius * .94 * (1 + energy * .31);
+      const py = top + y * tall + depth * y * tall * .135;
+      const score = depth - Math.abs(y - .52) * 2;
+      if (spread < .5 && score > brightest) {
+        brightest = score;
+        photoSource = { x, y: py };
+      }
+      const size = 2.1 + Math.max(0, depth) * 4 + energy * 2;
+      const alpha = (1 - spread) * (.50 + .43 * depth);
+      drawHalo(x, py, size * 3.4, alpha * .7);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      drawSpark(x, py, size, .25);
+    }
+    const size = Math.min(34, Math.max(20, width * .037)) + energy * 8;
+    drawHalo(center, top - 7, size * 3.1, .58 * (1 - spread));
+    ctx.globalAlpha = 1 - spread;
+    ctx.fillStyle = '#fff8d2';
+    starPath(center, top - 7, size, 5, .43);
+    ctx.fill();
+    ctx.fillStyle = '#eac578';
+    starPath(center, top - 7, size * .67, 5, .28);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  if (giftColors[effects.gift] && spread < .99) {
+    ctx.globalAlpha = 1 - spread;
+    const box = Math.max(23, Math.min(55, radius * .205));
+    drawGift(center - radius * .65, ground + 14, box * .9, giftColors[effects.gift]);
+    drawGift(center + radius * .39, ground + 26, box * .77, giftColors[effects.gift]);
+    drawGift(center + radius * .57, ground + 23, box * 1.18, giftColors[effects.gift]);
+    drawGift(center - radius * .38, ground + 35, box * .69, giftColors[effects.gift]);
+    ctx.globalAlpha = 1;
+  }
+  ctx.fillStyle = '#d8e5d7';
+  for (const [x, y, size, speed] of snow) {
+    ctx.globalAlpha = .26 + speed * .34;
+    const sx = (x * width + Math.sin(t * .25 + y * 20) * 19 + width) % width;
+    const sy = (y * height + t * (7 + speed * 18)) % height;
+    ctx.fillRect(sx, sy, size, size);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function getPhotoOrigin() {
+  if (!photoSource) return null;
+  const bounds = canvas.getBoundingClientRect();
+  const x = bounds.left + photoSource.x;
+  const y = bounds.top + photoSource.y;
+  return x >= 0 && y >= 0 && x < innerWidth && y < innerHeight ? { x, y } : null;
+}
+
+function drawSpark(x, y, size, inner) {
+  const inset = inner * size;
+  ctx.beginPath();
+  ctx.moveTo(x, y - size);
+  if (inner) ctx.lineTo(x + inset, y - inset);
+  ctx.lineTo(x + size, y);
+  if (inner) ctx.lineTo(x + inset, y + inset);
+  ctx.lineTo(x, y + size);
+  if (inner) ctx.lineTo(x - inset, y + inset);
+  ctx.lineTo(x - size, y);
+  if (inner) ctx.lineTo(x - inset, y - inset);
+  ctx.fill();
+}
+
+function render(now) {
+  frame = 0;
+  const targetStep = mobile ? 1000 / 30 : 1000 / 60;
+  const step = lastFrame ? now - lastFrame : targetStep;
+  if (!paused && step < targetStep - 2) {
+    invalidateScene();
+    return;
+  }
+  if (!paused && lastFrame) elapsed += Math.min(step, 100);
+  const start = performance.now();
+  drawScene(elapsed / 1000, Math.min(step, 100) / 1000);
+  if (paused) return;
+  lastFrame = now;
+  averageCost = mix(averageCost, performance.now() - start, .12);
+  averageStep = mix(averageStep || step, step, .12);
+  samples++;
+  if (samples % 12 === 0 && (averageCost > targetStep * .53 || averageStep > targetStep * 1.38)) {
+    particleBudget = Math.max(600, particleBudget - 250);
+  } else if (samples % 48 === 0 && averageCost < targetStep * .32 && averageStep < targetStep * 1.19) {
+    const ceiling = mobile ? 2400 : maxParticles;
+    particleBudget = Math.min(ceiling, particleBudget + 150);
+  }
+  invalidateScene();
+}
+
+function invalidateScene() {
+  if (!frame && width && visible && !document.hidden) frame = requestAnimationFrame(render);
+}
+
+function updateVisibility() {
+  if (!visible || document.hidden) {
+    cancelAnimationFrame(frame);
+    frame = lastFrame = 0;
+    return;
+  }
+  invalidateScene();
+}
+
+function updateMotion() {
+  motionButton.textContent = paused ? '播放动效' : '暂停动效';
+  lastFrame = 0;
+  invalidateScene();
+}
+
+motionButton.addEventListener('click', () => {
+  userControlsMotion = true;
+  paused = !paused;
+  updateMotion();
+});
+function syncMotionPreference() {
+  if (!userControlsMotion) {
+    paused = reducedMotion.matches;
+    updateMotion();
+  }
+}
+if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', syncMotionPreference);
+else reducedMotion.addListener(syncMotionPreference);
+document.addEventListener('visibilitychange', updateVisibility);
+if (typeof IntersectionObserver !== 'undefined') {
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    updateVisibility();
+  }).observe(canvas);
+}
+if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(canvas);
+else window.addEventListener('resize', resize);
+resize();
+updateMotion();
+
+const modelBase = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21';
+const modelUrl = 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task';
+
+function classifyGesture(result, aspect = 1) {
+  const gesture = result.gestures[0]?.[0];
+  const hand = result.worldLandmarks?.[0] || result.landmarks[0];
+  if (!hand) return null;
+  if (gesture?.categoryName === 'Closed_Fist' && gesture.score >= .61) return 'tree';
+  const worldCoordinates = Boolean(result.worldLandmarks?.[0]);
+  const distance = (a, b) => Math.hypot(
+    (hand[a].x - hand[b].x) * (worldCoordinates ? 1 : aspect),
+    hand[a].y - hand[b].y,
+    worldCoordinates ? hand[a].z - hand[b].z : 0,
+  );
+  const palm = Math.max(distance(0, 9), distance(5, 17));
+  const pinch = palm > 0 && distance(4, 8) / palm < .29;
+  if (pinch) return 'photo';
+  if (gesture?.categoryName === 'Open_Palm' && gesture.score >= .55) return 'scatter';
+  return null;
+}
+
+function setupCamera(onGesture) {
+  const button = document.querySelector('#camera');
+  const label = button.querySelector('span');
+  const preview = document.querySelector('#preview');
+  const box = document.querySelector('#camera-box');
+  const status = document.querySelector('#camera-status');
+  const cards = [...document.querySelectorAll('[data-gesture]')];
+  const labels = { tree: '已识别握拳', scatter: '已识别摊手', photo: '已识别捏指' };
+  let stream, recognizer, frame, generation = 0;
+  let candidate = null, lastGesture = null, streak = 0;
+  let lastFrame = -Infinity, lastVideoTime = -1, detectionInterval = 75, busy = false;
+
+  function publish(message, action = null) {
+    if (status.textContent !== message) status.textContent = message;
+    for (const card of cards) card.classList.toggle('active', card.dataset.gesture === action);
+  }
+
+  function stop(message = '开启摄像头后，将一只手放在画面内。') {
+    generation++;
+    cancelAnimationFrame(frame);
+    stream?.getTracks().forEach(track => track.stop());
+    stream = null;
+    preview.srcObject = null;
+    box.hidden = true;
+    busy = false;
+    button.removeAttribute('aria-busy');
+    label.textContent = '开启摄像头';
+    candidate = lastGesture = null;
+    streak = 0;
+    lastFrame = -Infinity;
+    lastVideoTime = -1;
+    detectionInterval = 75;
+    publish(message);
+  }
+
+  function detect(now) {
+    if (!stream) return;
+    frame = requestAnimationFrame(detect);
+    if (now - lastFrame < detectionInterval || preview.readyState < 2 || preview.currentTime === lastVideoTime) return;
+    lastFrame = now;
+    lastVideoTime = preview.currentTime;
+    try {
+      const started = performance.now();
+      const result = recognizer.recognizeForVideo(preview, now);
+      const cost = performance.now() - started;
+      detectionInterval = detectionInterval * .85 + Math.max(75, Math.min(240, cost * 3)) * .15;
+      const action = classifyGesture(result, preview.videoWidth / preview.videoHeight);
+      if (action !== candidate) {
+        candidate = action;
+        streak = 1;
+        return;
+      }
+      streak++;
+      if (streak < 3 || lastGesture === action) return;
+      lastGesture = action;
+      if (action) {
+        publish(labels[action], action);
+        onGesture(action);
+      } else {
+        publish('等待手势 · 握拳、摊手或捏指');
+      }
+    } catch {
+      stop('手势识别已停止，请重新开启摄像头。');
+    }
+  }
+
+  button.addEventListener('click', async () => {
+    if (stream || busy) {
+      stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      publish('请通过 HTTPS 或 localhost 打开网页以启用摄像头。');
+      return;
+    }
+    const attempt = ++generation;
+    busy = true;
+    button.setAttribute('aria-busy', 'true');
+    label.textContent = '取消启动';
+    publish('等待摄像头权限…');
+    try {
+      const acquired = await navigator.mediaDevices.getUserMedia({
+        audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      if (generation !== attempt) {
+        acquired.getTracks().forEach(track => track.stop());
+        return;
+      }
+      stream = acquired;
+      preview.srcObject = stream;
+      stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+        if (generation === attempt) stop('摄像头已断开。');
+      });
+      box.hidden = false;
+      publish('正在加载手势模型…');
+      await preview.play();
+      if (!recognizer) {
+        const { FilesetResolver, GestureRecognizer } = await import(modelBase + '/vision_bundle.mjs');
+        const vision = await FilesetResolver.forVisionTasks(modelBase + '/wasm');
+        const loaded = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: modelUrl, delegate: 'CPU' },
+          runningMode: 'VIDEO', numHands: 1,
+        });
+        if (generation !== attempt) {
+          loaded.close();
+          return;
+        }
+        recognizer = loaded;
+      }
+      if (generation !== attempt) return;
+      busy = false;
+      button.removeAttribute('aria-busy');
+      label.textContent = '关闭摄像头';
+      publish('等待手势 · 握拳、摊手或捏指');
+      frame = requestAnimationFrame(detect);
+    } catch (error) {
+      if (generation !== attempt) return;
+      const reason = {
+        NotAllowedError: '摄像头权限未开启，仍可使用树下按钮。',
+        NotFoundError: '未找到摄像头，仍可使用树下按钮。',
+        NotReadableError: '摄像头暂不可用，请检查是否被其他应用占用。',
+      };
+      stop(reason[error.name] || '摄像头或手势模型加载失败，请检查网络后重试。');
+    }
+  });
+  window.addEventListener('pagehide', () => stop());
+}
+
+function makeCarol() {
+  const notes = [
+    [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
+    [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[74,1],[74,1],[76,1],[74,2],[79,2],
+    [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
+    [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[79,1],[79,1],[77,1],[74,1],[72,4],
+  ];
+  const beat = .288;
+  const sampleRate = 22050;
+  const beats = notes.reduce((sum, note) => sum + note[1], 0);
+  const sampleCount = Math.ceil((beats * beat + .24) * sampleRate);
+  const samples = new Float32Array(sampleCount);
+  const chords = [48,48,48,48,53,48,55,55,48,48,48,48,53,48,55,48];
+  function bell(note, time, duration, volume, bass = false) {
+    const f = 440 * Math.pow(2, (note - 69) / 12);
+    const start = Math.round(time * sampleRate);
+    const count = Math.min(sampleCount - start, Math.ceil(duration * sampleRate));
+    for (let i = 0; i < count; i++) {
+      const at = i / sampleRate;
+      const p = at * Math.PI * 2 * f;
+      const envelope = Math.min(1, at / .009, (duration - at) / .09) * Math.exp(-at * (bass ? 3.7 : 4.8));
+      const tone = Math.sin(p) + Math.sin(p * 2.01) * .19 + Math.sin(p * 3.01) * .09 * Math.exp(-at * 6);
+      samples[start + i] += tone * envelope * volume;
+    }
+  }
+  let time = 0;
+  for (const [note, length] of notes) {
+    bell(note, time, length * beat + .16, .42);
+    time += length * beat;
+  }
+  for (let i = 0; i < beats; i += 2) {
+    const chord = chords[Math.min(chords.length - 1, Math.floor(i / 4))];
+    bell(chord + (i % 4 ? 7 : 0), i * beat, .63, .24, true);
+  }
+  const buffer = new ArrayBuffer(44 + sampleCount * 2);
+  const view = new DataView(buffer);
+  const word = (offset, name) => {
+    for (let i = 0; i < name.length; i++) view.setUint8(offset + i, name.charCodeAt(i));
+  };
+  word(0, 'RIFF');
+  view.setUint32(4, buffer.byteLength - 8, true);
+  word(8, 'WAVEfmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  word(36, 'data');
+  view.setUint32(40, sampleCount * 2, true);
+  for (let i = 0; i < sampleCount; i++) {
+    view.setInt16(44 + i * 2, Math.max(-1, Math.min(1, samples[i])) * 32767, true);
+  }
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+function setupMusic(onEnergy) {
+  const button = document.querySelector('#play');
+  const fileInput = document.querySelector('#music-file');
+  const track = document.querySelector('#track');
+  const state = document.querySelector('#track-state');
+  const audio = new Audio();
+  audio.loop = true;
+  let context, analyser, spectrum, sourceUrl, frame, energy = 0;
+  let trackVersion = 0;
+
+  function setSource(blob) {
+    audio.pause();
+    if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+    sourceUrl = URL.createObjectURL(blob);
+    audio.src = sourceUrl;
+    trackVersion++;
+  }
+
+  function sample() {
+    if (audio.paused) return;
+    analyser.getByteFrequencyData(spectrum);
+    let level = 0;
+    for (let i = 2; i < 29; i++) {
+      level += spectrum[i] * (i < 8 ? 1.35 : 1);
+    }
+    const peak = Math.min(1, level / (255 * 16));
+    energy += (peak - energy) * (peak > energy ? .41 : .16);
+    onEnergy(energy);
+    frame = requestAnimationFrame(sample);
+  }
+
+  async function play() {
+    if (!sourceUrl) setSource(makeCarol());
+    const version = trackVersion;
+    try {
+      if (!context) {
+        context = new AudioContext();
+        analyser = context.createAnalyser();
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = .48;
+        spectrum = new Uint8Array(analyser.frequencyBinCount);
+        const source = context.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(context.destination);
+      }
+      await Promise.all([context.resume(), audio.play()]);
+    } catch (error) {
+      if (version !== trackVersion || error.name === 'AbortError') return;
+      audio.pause();
+      state.textContent = '无法播放，请选择其他音频或重试。';
+    }
+  }
+
+  button.addEventListener('click', () => {
+    if (audio.paused) void play();
+    else audio.pause();
+  });
+  audio.addEventListener('playing', () => {
+    button.textContent = 'Ⅱ';
+    button.setAttribute('aria-label', '暂停音乐');
+    state.textContent = '正在播放 · 粒子随音乐律动';
+    cancelAnimationFrame(frame);
+    sample();
+  });
+  audio.addEventListener('pause', () => {
+    button.textContent = '▶';
+    button.setAttribute('aria-label', '播放音乐');
+    state.textContent = '已暂停';
+    cancelAnimationFrame(frame);
+    energy = 0;
+    onEnergy(0);
+  });
+  audio.addEventListener('error', () => {
+    state.textContent = '无法读取这段音频，请重新选择。';
+  });
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    setSource(file);
+    track.textContent = file.name;
+    track.title = file.name;
+    void play();
+  });
+}
+
+
+const $ = selector => document.querySelector(selector);
+const status = $('#mode');
+const photos = [];
+let currentPhoto = -1;
+let settings = {};
+try {
+  settings = JSON.parse(localStorage.getItem('winter-lights-settings') || '{}') || {};
+} catch {}
+
+for (const [id, key] of Object.entries({
+  palette: 'palette', shape: 'shape', gift: 'gift', density: 'density', 'custom-color': 'color',
+})) {
+  const input = document.getElementById(id);
+  if (settings[key] != null) input.value = settings[key];
+  const apply = () => {
+    effects[key] = key === 'density' ? Number(input.value) : input.value;
+    $('#density-value').textContent = effects.density;
+    $('#color-field').hidden = effects.palette !== 'custom';
+    invalidateScene();
+  };
+  apply();
+  input.addEventListener('input', () => {
+    apply();
+    settings[key] = effects[key];
+    try { localStorage.setItem('winter-lights-settings', JSON.stringify(settings)); } catch {}
+  });
+}
+
+function setScene(action) {
+  effects.scattered = action === 'scatter';
+  status.lastChild.textContent = effects.scattered ? '粒子已散开' : '粒子已汇聚';
+  for (const button of document.querySelectorAll('[aria-pressed][data-action]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.action === action));
+  }
+  invalidateScene();
+}
+
+const database = new Promise((resolve, reject) => {
+  try {
+    const request = indexedDB.open('winter-lights-album', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('photos', { keyPath: 'id' });
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => reject(new Error('照片数据库正在使用'));
+  } catch (error) { reject(error); }
+});
+async function transaction(mode, work) {
+  const db = await database;
+  return new Promise((resolve, reject) => {
+    const operation = db.transaction('photos', mode);
+    const result = work(operation.objectStore('photos'));
+    operation.oncomplete = () => resolve(result?.result);
+    operation.onabort = () => reject(operation.error || new Error('相册操作已中止'));
+  });
+}
+function hydrate(record) {
+  return { ...record, url: URL.createObjectURL(record.blob) };
+}
+function renderPhotos() {
+  $('#photo-count').textContent = photos.length + ' 张';
+  $('#thumbs').replaceChildren(...photos.map((photo, index) => {
+    const tile = document.createElement('div');
+    tile.className = 'thumb';
+    const button = document.createElement('button');
+    button.setAttribute('aria-label', '查看 ' + photo.name);
+    button.onclick = () => openPhoto(index);
+    const image = document.createElement('img');
+    image.src = photo.url;
+    image.alt = '';
+    button.append(image);
+    const remove = document.createElement('button');
+    remove.className = 'remove';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', '删除 ' + photo.name);
+    remove.onclick = async () => {
+      remove.disabled = true;
+      try {
+        if (photo.cached) await transaction('readwrite', store => store.delete(photo.id));
+        const index = photos.indexOf(photo);
+        if (index !== -1) photos.splice(index, 1);
+        URL.revokeObjectURL(photo.url);
+        renderPhotos();
+        $('#photo-status').textContent = '已移除照片。';
+      } catch {
+        remove.disabled = false;
+        $('#photo-status').textContent = '无法删除照片，请重试。';
+      }
+    };
+    tile.append(button, remove);
+    return tile;
+  }));
+}
+const photosReady = transaction('readonly', store => store.getAll()).then(records => {
+  records.sort((a, b) => a.added - b.added);
+  photos.push(...records.map(record => hydrate({ ...record, cached: true })));
+  renderPhotos();
+}).catch(() => {
+  $('#photo-status').textContent = '浏览器存储不可用，照片仅在本次打开时显示。';
+});
+$('#photo-file').addEventListener('change', async event => {
+  const input = event.target;
+  const files = [...input.files];
+  input.value = '';
+  if (!files.length) return;
+  input.disabled = true;
+  await photosReady;
+  let added = 0;
+  let temporary = 0;
+  for (const [index, file] of files.entries()) {
+    try {
+      const bitmap = await createImageBitmap(file);
+      bitmap.close();
+    } catch { continue; }
+    const record = { id: crypto.randomUUID(), name: file.name, blob: file, added: Date.now() + index };
+    let cached = true;
+    try {
+      await transaction('readwrite', store => store.add(record));
+    } catch {
+      cached = false;
+      temporary++;
+    }
+    photos.push(hydrate({ ...record, cached }));
+    added++;
+  }
+  renderPhotos();
+  const messages = [];
+  if (added - temporary) messages.push('已缓存 ' + (added - temporary) + ' 张照片');
+  if (temporary) messages.push(temporary + ' 张仅在本次显示');
+  if (files.length > added) messages.push(files.length - added + ' 张图片无法读取');
+  $('#photo-status').textContent = messages.join('，') + '。';
+  input.disabled = false;
+});
+
+const dialog = $('#album');
+const largePhoto = $('#large-photo');
+const photoCard = dialog.querySelector('.photo-card');
+const photoSpark = dialog.querySelector('.photo-spark');
+let albumRequest = 0;
+let photoAnimations = [];
+
+function clearPhotoFlight() {
+  for (const animation of photoAnimations) animation.cancel();
+  photoAnimations = [];
+  dialog.classList.remove('photo-flight');
+}
+
+function playPhotoFlight(origin) {
+  const image = largePhoto.getBoundingClientRect();
+  const card = photoCard.getBoundingClientRect();
+  const x = image.left + image.width / 2;
+  const y = image.top + image.height / 2;
+  const middleX = (origin.x + x) / 2;
+  const middleY = Math.max(16, (origin.y + y) / 2 - 45);
+  const pose = (left, top, scale) => `translate(${left}px, ${top}px) scale(${scale})`;
+  const travel = photoSpark.animate([
+    { transform: pose(origin.x, origin.y, .38), opacity: 1, offset: 0, easing: 'ease-out' },
+    { transform: pose(origin.x, origin.y, .85), opacity: 1, offset: .13, easing: 'ease-in' },
+    { transform: pose(middleX, middleY, .63), opacity: 1, offset: .33, easing: 'ease-out' },
+    { transform: pose(x, y, .74), opacity: 1, offset: .52, easing: 'ease-out' },
+    { transform: pose(x, y, 2.35), opacity: 0, offset: .77 },
+    { transform: pose(x, y, 2.35), opacity: 0, offset: 1 },
+  ], { duration: 680 });
+  const transformOrigin = `${x - card.left}px ${y - card.top}px`;
+  const reveal = photoCard.animate([
+    { transform: 'scale(.035)', opacity: 0, transformOrigin, offset: 0 },
+    { transform: 'scale(.035)', opacity: 0, transformOrigin, offset: .50, easing: 'cubic-bezier(.16,.8,.25,1)' },
+    { transform: 'scale(1)', opacity: 1, transformOrigin, offset: 1 },
+  ], { duration: 680 });
+  photoAnimations = [travel, reveal];
+  reveal.onfinish = () => {
+    if (photoAnimations.includes(reveal)) clearPhotoFlight();
+  };
+}
+
+async function openPhoto(index) {
+  if (!photos.length) {
+    $('#photo-status').textContent = '请先添加照片，再使用捏指或照片按钮。';
+    $('#photo-panel').scrollIntoView({ block: 'nearest' });
+    return;
+  }
+  const request = ++albumRequest;
+  currentPhoto = ((index % photos.length) + photos.length) % photos.length;
+  const photo = photos[currentPhoto];
+  largePhoto.src = photo.url;
+  largePhoto.alt = photo.name;
+  $('#photo-position').textContent = (currentPhoto + 1) + ' / ' + photos.length;
+  $('#previous-photo').disabled = photos.length < 2;
+  $('#next-photo').disabled = photos.length < 2;
+  if (dialog.open) return;
+  try { await largePhoto.decode(); } catch {}
+  if (request !== albumRequest || dialog.open) return;
+  const origin = !matchMedia('(prefers-reduced-motion: reduce)').matches && photoCard.animate && getPhotoOrigin();
+  if (origin) dialog.classList.add('photo-flight');
+  dialog.showModal();
+  if (origin) playPhotoFlight(origin);
+}
+function showNextPhoto() {
+  // Ignore a queued duplicate while the database is opening.
+  const request = ++albumRequest;
+  void photosReady.then(() => {
+    if (request === albumRequest) openPhoto(currentPhoto + 1);
+  });
+}
+$('#previous-photo').onclick = () => openPhoto(currentPhoto - 1);
+$('#next-photo').onclick = () => openPhoto(currentPhoto + 1);
+$('#close-album').onclick = () => dialog.close();
+dialog.addEventListener('close', clearPhotoFlight);
+dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+dialog.addEventListener('keydown', event => {
+  if (event.key === 'ArrowLeft') openPhoto(currentPhoto - 1);
+  if (event.key === 'ArrowRight') openPhoto(currentPhoto + 1);
+});
+
+function act(action, gesture = false) {
+  if (action === 'photo') showNextPhoto();
+  else {
+    albumRequest++;
+    if (gesture && dialog.open) dialog.close();
+    setScene(action);
+  }
+}
+for (const button of document.querySelectorAll('[data-action]')) {
+  button.addEventListener('click', () => act(button.dataset.action));
+}
+
+setupCamera(action => act(action, true));
+setupMusic(energy => { effects.energy = energy; });
+
+</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#scene"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3l2.7 7.2 7.6 2.8-7.6 2.9L16 23l-2.7-7.1L6 13l7.3-2.8L16 3zM25 21v6m-3-3h6M7 20v5m-2.5-2.5h5"/></svg></span><span>冬夜星树 <small>WINTER LIGHTS</small></span></a>
+  <button class="camera strong" id="camera"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="m15 10 6-3v10l-6-3"/></svg><span>开启摄像头</span></button>
+</header>
+<main class="layout">
+  <section class="stage" aria-label="互动粒子圣诞树">
+    <canvas id="scene"></canvas>
+    <div class="stage-heading"><span class="eyebrow">✦ &nbsp; WINTER WONDERLAND</span><h1>圣诞星光</h1><p>Merry Christmas</p></div>
+    <div class="stage-status" id="mode"><i></i>粒子已汇聚</div>
+    <button class="motion" id="motion" type="button">暂停动效</button>
+    <noscript><p class="script-message">请开启 JavaScript 后重新打开星树。</p></noscript>
+    <div class="camera-box" id="camera-box" hidden><video id="preview" autoplay playsinline muted></video></div>
+    <div class="stage-actions" aria-label="手动控制圣诞树">
+      <button data-action="tree" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="m12 3 5 7h-2l4 6H5l4-6H7l5-7zm0 13v5"/></svg>汇聚</button>
+      <button data-action="scatter" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 2v7m0 6v7M2 12h7m6 0h7M5 5l3 3m8 8 3 3m0-14-3 3m-8 8-3 3"/></svg>散开</button>
+      <button data-action="photo"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 2-2 7 6"/><circle cx="16" cy="9" r="1"/></svg>照片</button>
+    </div>
+  </section>
+  <aside class="sidebar">
+    <section class="panel gestures">
+      <h2><span class="section-icon" aria-hidden="true">◎</span>手势控制</h2>
+      <div class="gesture-grid">
+        <div data-gesture="tree"><svg viewBox="0 0 32 32"><path d="M8 17v-4a2 2 0 0 1 4 0v-2a2 2 0 0 1 4 0v-1a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v7c0 4-3 8-8 8-4 0-7-3-8-7l-2-5a2 2 0 0 1 3-2l4 4h5m-6-4v2m4-3v3m4-3v3"/></svg><b>握拳</b><small>汇聚成树</small></div>
+        <div data-gesture="scatter"><svg viewBox="0 0 32 32"><path d="M9 17V9a1.7 1.7 0 0 1 3.4 0v6-9a1.7 1.7 0 0 1 3.4 0v9-10a1.7 1.7 0 0 1 3.4 0v10-7a1.7 1.7 0 0 1 3.4 0v10l2-2a2 2 0 0 1 3 2l-3 6a8.5 8.5 0 0 1-15 .4L5 18a2 2 0 0 1 3-2l1 1z"/></svg><b>摊手</b><small>粒子散开</small></div>
+        <div data-gesture="photo"><svg viewBox="0 0 32 32"><path d="M10 17c-2-1-3-4-1-7 2-3 6-4 9-3l4 2a2 2 0 0 1-2 3l-4-1a4 4 0 0 0-3 2c-1 2 0 4 3 4h2l3-3a2 2 0 0 1 3 2l-2 3 4-2a2 2 0 0 1 2 3l-5 4c-2 2-4 3-8 3-5 0-8-3-10-7a2 2 0 0 1 3-2l3 2h4"/><path d="M6 8 4 6m1 6H2"/></svg><b>捏指</b><small>弹出照片</small></div>
+      </div>
+      <p class="hint" id="camera-status" aria-live="polite">开启摄像头后，将一只手放在画面内。</p>
+    </section>
+    <section class="panel settings">
+      <h2><span class="section-icon" aria-hidden="true">✧</span>装点星树</h2>
+      <div class="field"><label for="palette">粒子配色</label><select id="palette"><option value="pine">松绿暖金</option><option value="frost">冰蓝银白</option><option value="rose">蔷薇粉金</option><option value="custom">自选颜色</option></select></div>
+      <div class="field" id="color-field" hidden><label for="custom-color">粒子颜色</label><input type="color" id="custom-color" value="#8fe8af"></div>
+      <div class="field"><label for="shape">粒子形状</label><select id="shape"><option value="glow">光点</option><option value="star">星芒</option><option value="diamond">菱形</option></select></div>
+      <div class="field"><label for="gift">礼盒样式</label><select id="gift"><option value="classic">绯红金缎</option><option value="ice">冰蓝银缎</option><option value="pink">莓粉丝带</option><option value="none">隐藏礼盒</option></select></div>
+      <div class="field range"><label for="density">粒子密度</label><input id="density" type="range" min="600" max="4300" step="100" value="3000"><output id="density-value" for="density">3000</output></div>
+    </section>
+    <section class="panel music">
+      <h2><span class="section-icon" aria-hidden="true">♫</span>音乐律动</h2>
+      <div class="player"><button class="play" id="play" type="button" aria-label="播放音乐">▶</button><div><b id="track">铃儿响叮当</b><small id="track-state">内置音乐 · 点击播放</small></div><label class="upload" for="music-file">换音乐<input id="music-file" type="file" accept="audio/*"></label></div>
+    </section>
+    <section class="panel photos" id="photo-panel">
+      <h2><span class="section-icon" aria-hidden="true">▧</span>圣诞相册 <span class="photo-count" id="photo-count">0 张</span></h2>
+      <div class="thumbs" id="thumbs"></div>
+      <label class="upload add" for="photo-file">＋ 添加照片<input id="photo-file" type="file" accept="image/*" multiple></label>
+      <p class="hint" id="photo-status" aria-live="polite">照片会保存在当前浏览器。</p>
+    </section>
+  </aside>
+</main>
+<dialog id="album" aria-label="圣诞相册">
+  <span class="photo-spark" aria-hidden="true"></span>
+  <div class="photo-card">
+    <button class="close" id="close-album" aria-label="关闭相册">×</button>
+    <img id="large-photo" alt="">
+    <div class="album-controls"><button id="previous-photo" aria-label="上一张">‹</button><span id="photo-position"></span><button id="next-photo" aria-label="下一张">›</button></div>
+  </div>
+</dialog>
+</body>
+</html>
