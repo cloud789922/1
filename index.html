@@ -44,7 +44,10 @@ h1{margin:12px 0 4px;font-family:"Songti SC","SimSun",Georgia,serif;font-size:cl
 .stage-actions svg{width:17px;height:17px}
 .camera-box{position:absolute;left:20px;bottom:21px;width:min(25%,160px);aspect-ratio:4/3;overflow:hidden;border-radius:12px;border:1px solid #718674;background:#000}
 .camera-box video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.stage-gift{--gift-front:#a34143;--gift-edge:#682c34;--gift-top:#cb6662;--ribbon:#f6d484;position:absolute;aspect-ratio:1;min-height:44px;padding:0;border:0;background:transparent;overflow:visible}
+.stage-gift{--gift-front:#ba4746;--gift-edge:#682c34;--gift-top:#db7470;--ribbon:#f8d88b;position:absolute;aspect-ratio:1;min-height:62px;padding:0;border:0;background:transparent;overflow:visible;z-index:1}
+.stage-gift::before{content:"";position:absolute;inset:8% -34% -15%;background:radial-gradient(ellipse,#efba6266,transparent 70%);pointer-events:none}
+.gift-label{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 9px;border:1px solid #f8d88bc9;border-radius:999px;background:#2a1d1b;color:#ffedbc;box-shadow:0 0 15px #ffca6b51;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;pointer-events:none}
+.stage-gift.is-open .gift-label{opacity:0}
 .stage-gift:hover{background:transparent;filter:brightness(1.18)}
 .stage-gift[data-style=ice]{--gift-front:#487da4;--gift-edge:#2a4964;--gift-top:#77acd0;--ribbon:#d9f2fa}
 .stage-gift[data-style=pink]{--gift-front:#a74973;--gift-edge:#5c2947;--gift-top:#d8799f;--ribbon:#f6d0dc}
@@ -73,8 +76,8 @@ select:hover{background-color:#253a2b}
 .range output{width:36px;text-align:right;font-size:12px;color:#ccdbbd}
 .player{display:flex;align-items:center;gap:9px}
 .player div{flex:1;min-width:0}
-.player b,.player small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player b{font-size:14px}.player small{margin-top:4px}
+.player select{width:100%;min-width:0;font-size:13px}
+.player small{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .play{border:0;background:#d5e8ab;color:#172417;min-height:39px;width:39px;flex:none;font-size:15px}
 .play:hover{background:#e5f6c6}
 .upload{position:relative;border:1px solid #3a5141;padding:6px 9px;border-radius:7px;font-size:13px;color:#dce8d7;display:inline-flex;align-items:center;justify-content:center;min-height:32px;white-space:nowrap}
@@ -88,13 +91,16 @@ select:hover{background-color:#253a2b}
 .thumb button:first-child{position:absolute;inset:0;width:100%;padding:0;border:0;border-radius:0}
 .thumb .remove{position:absolute;top:2px;right:2px;min-height:21px;width:21px;padding:0;border:0;border-radius:50%;background:#081510de;color:white;line-height:1}
 dialog{width:min(90vw,700px);padding:0;border:0;overflow:visible;background:transparent;color:var(--text)}
-dialog::backdrop{background:#020806da}
+dialog::backdrop{background:#020806db}
 dialog.gift-opening::backdrop{animation:gift-backdrop 620ms ease-out}
 @keyframes gift-backdrop{0%,32%{opacity:0}100%{opacity:1}}
 .photo-card{position:relative;padding:14px;border:1px solid #536c53;border-radius:15px;background:#101e18}
 dialog:not(.show-picture){width:min(83vw,334px)}
 dialog:not(.show-picture) .photo-card{padding:0;border:0;background:transparent}
-dialog:not(.show-picture) .close{top:10px;right:10px;z-index:2}
+dialog.show-picture{width:fit-content;max-width:calc(100vw - 28px)}
+dialog.show-picture::backdrop{background:radial-gradient(circle at 18% 25%,#82553055,transparent 35%),radial-gradient(circle at 82% 76%,#3e79505a,transparent 37%),#040b0aeb;backdrop-filter:blur(5px)}
+dialog.show-picture .photo-card{padding:clamp(7px,1.5vw,14px);border:1px solid #b58e61;border-radius:12px;background:linear-gradient(140deg,#30241b,#131e18 48%,#3b291c);box-shadow:0 0 52px #deb66c64,0 18px 65px #000b}
+.greeting-picture:focus{outline:0}
 .greeting-cover{position:relative;display:grid;place-items:center;align-content:center;gap:15px;width:100%;min-height:245px;padding:38px 18px 28px;border:1px solid #d59360;border-radius:9px;background:radial-gradient(ellipse at 50% 33%,#904a36 0%,#6b2932 43%,#3d1b24 100%);color:#ffebba;box-shadow:0 17px 65px #010703b8;backface-visibility:hidden}
 .greeting-cover::before{content:"";position:absolute;inset:10px;border:1px solid #d5a9798a;border-radius:5px;pointer-events:none}
 .greeting-cover:hover{border-color:#ffe4a1;background:radial-gradient(ellipse at 50% 33%,#a65840 0%,#72303a 43%,#44202a 100%)}
@@ -104,10 +110,7 @@ dialog:not(.show-picture) .close{top:10px;right:10px;z-index:2}
 .greeting-empty{text-align:center;padding:32px 10px 25px}
 .greeting-empty button{padding:0 14px}
 @media(prefers-reduced-motion:reduce){.gift-lid{transition:none}}
-#large-photo{display:block;width:100%;max-height:70svh;object-fit:contain;background:#060d0a;border-radius:8px}
-.close{position:absolute;top:20px;right:20px;width:37px;font-size:22px;background:#0a1713e8}
-.album-controls{display:flex;justify-content:center;align-items:center;gap:15px;padding-top:10px}
-.album-controls button{min-height:35px;min-width:42px;font-size:22px}
+#large-photo{display:block;width:auto;max-width:min(83vw,780px);max-height:min(80vh,80svh);object-fit:contain;background:#060d0a;border-radius:5px}
 @media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr) 290px;gap:12px;padding-inline:15px}.stage-status{top:16px;right:16px}.panel{padding:13px}.stage-heading{top:48px}}
 @media(max-width:680px){.top{height:64px;padding-inline:14px}.brand{font-size:17px;gap:8px}.brand-icon{width:37px;height:37px}.camera{padding-inline:10px}.layout{display:block;padding:12px 12px 24px}.stage{height:clamp(500px,73svh,760px);border-radius:15px}.stage-heading{top:24px;left:17px}.stage-heading h1{font-size:clamp(34px,8.5vw,59px)}.stage-status{font-size:10px;top:12px;right:12px;padding:6px 8px}.stage-actions{bottom:15px}.camera-box{left:10px;bottom:75px}.sidebar{margin-top:12px;grid-template-columns:minmax(0,1fr);gap:10px}}
 @media(max-width:900px){.motion{top:54px;right:16px}}
@@ -191,10 +194,10 @@ function resize() {
   tall = height * .56;
   ground = top + tall;
   radius = Math.min(width * .40, tall * .64);
-  const boxSize = Math.max(44, radius * .24);
+  const boxSize = Math.max(62, Math.min(90, radius * .31));
   giftTarget.style.width = boxSize + 'px';
   giftTarget.style.left = center + radius * .55 + 'px';
-  giftTarget.style.top = ground + (mobile ? 6 : 21) - boxSize + 'px';
+  giftTarget.style.top = ground + (mobile ? 4 : 21) - boxSize + 'px';
   drawBackdrop();
   invalidateScene();
 }
@@ -618,19 +621,44 @@ function setupCamera(onGesture) {
   window.addEventListener('pagehide', () => stop());
 }
 
-function makeCarol() {
-  const notes = [
+const carols = {
+  jingle: { beat: .288, measure: 4, chords: [48,48,48,48,53,48,55,55,48,48,48,48,53,48,55,48], notes: [
     [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
     [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[74,1],[74,1],[76,1],[74,2],[79,2],
     [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
     [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[79,1],[79,1],[77,1],[74,1],[72,4],
-  ];
-  const beat = .288;
+  ] },
+  silent: { beat: .52, measure: 3, chords: [48,48,55,48,53,48,53,48,55,48,48,48], notes: [
+    [79,1.5],[81,.5],[79,1],[76,3],[79,1.5],[81,.5],[79,1],[76,3],
+    [86,2],[86,1],[83,3],[84,2],[84,1],[79,3],
+    [81,2],[81,1],[84,1.5],[83,.5],[81,1],[79,1.5],[81,.5],[79,1],[76,3],
+    [81,2],[81,1],[84,1.5],[83,.5],[81,1],[79,1.5],[81,.5],[79,1],[76,3],
+    [86,2],[86,1],[89,1.5],[86,.5],[83,1],[84,3],[88,3],
+    [84,1],[79,1],[76,1],[79,1.5],[77,.5],[74,1],[72,4],
+  ] },
+  joy: { beat: .38, measure: 4, chords: [48,55,48,55,48,55,55,48], notes: [
+    [76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],
+    [72,1],[72,1],[74,1],[76,1],[76,1.5],[74,.5],[74,2],
+    [76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],
+    [72,1],[72,1],[74,1],[76,1],[74,1.5],[72,.5],[72,2],
+  ] },
+  deck: { beat: .32, measure: 4, chords: [53,53,58,53,53,53,48,53,48,53,48,53,53,53,48,53], notes: [
+    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
+    [79,.5],[81,.5],[82,.5],[79,.5],[81,1.5],[79,.5],[77,1],[76,1],[77,2],
+    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
+    [79,.5],[81,.5],[82,.5],[79,.5],[81,1.5],[79,.5],[77,1],[76,1],[77,2],
+    [79,1.5],[81,.5],[82,1],[79,1],[81,1.5],[82,.5],[84,1],[79,1],
+    [81,.5],[83,.5],[84,1],[86,.5],[88,.5],[89,1],[88,1],[86,1],[84,2],
+    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
+    [86,.5],[86,.5],[86,.5],[86,.5],[84,1.5],[82,.5],[81,1],[79,1],[77,2],
+  ] },
+};
+
+function makeCarol({ notes, beat, measure, chords }) {
   const sampleRate = 22050;
   const beats = notes.reduce((sum, note) => sum + note[1], 0);
   const sampleCount = Math.ceil((beats * beat + .24) * sampleRate);
   const samples = new Float32Array(sampleCount);
-  const chords = [48,48,48,48,53,48,55,55,48,48,48,48,53,48,55,48];
   function bell(note, time, duration, volume, bass = false) {
     const f = 440 * Math.pow(2, (note - 69) / 12);
     const start = Math.round(time * sampleRate);
@@ -648,9 +676,9 @@ function makeCarol() {
     bell(note, time, length * beat + .16, .42);
     time += length * beat;
   }
-  for (let i = 0; i < beats; i += 2) {
-    const chord = chords[Math.min(chords.length - 1, Math.floor(i / 4))];
-    bell(chord + (i % 4 ? 7 : 0), i * beat, .63, .24, true);
+  for (let i = 0; i < beats; i += measure / 2) {
+    const chord = chords[Math.min(chords.length - 1, Math.floor(i / measure))];
+    bell(chord + (i % measure ? 7 : 0), i * beat, .63, .24, true);
   }
   const buffer = new ArrayBuffer(44 + sampleCount * 2);
   const view = new DataView(buffer);
@@ -679,17 +707,23 @@ function setupMusic(onEnergy) {
   const button = document.querySelector('#play');
   const fileInput = document.querySelector('#music-file');
   const track = document.querySelector('#track');
+  const customOption = track.querySelector('option[value=custom]');
   const state = document.querySelector('#track-state');
   const audio = new Audio();
   audio.loop = true;
   let context, analyser, spectrum, sourceUrl, frame, energy = 0;
   let trackVersion = 0;
+  let customFile;
 
   function setSource(blob) {
     audio.pause();
     if (sourceUrl) URL.revokeObjectURL(sourceUrl);
-    sourceUrl = URL.createObjectURL(blob);
-    audio.src = sourceUrl;
+    sourceUrl = blob ? URL.createObjectURL(blob) : null;
+    if (sourceUrl) audio.src = sourceUrl;
+    else {
+      audio.removeAttribute('src');
+      audio.load();
+    }
     trackVersion++;
   }
 
@@ -707,7 +741,11 @@ function setupMusic(onEnergy) {
   }
 
   async function play() {
-    if (!sourceUrl) setSource(makeCarol());
+    if (!sourceUrl) {
+      const source = track.value === 'custom' ? customFile : makeCarol(carols[track.value]);
+      if (!source) return;
+      setSource(source);
+    }
     const version = trackVersion;
     try {
       if (!context) {
@@ -748,15 +786,24 @@ function setupMusic(onEnergy) {
     onEnergy(0);
   });
   audio.addEventListener('error', () => {
+    if (!sourceUrl) return;
     state.textContent = '无法读取这段音频，请重新选择。';
+  });
+  track.addEventListener('change', () => {
+    const resume = !audio.paused;
+    setSource(null);
+    state.textContent = track.value === 'custom' ? '本地音乐 · 点击播放' : '内置音乐 · 点击播放';
+    if (resume) void play();
   });
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     fileInput.value = '';
     if (!file) return;
-    setSource(file);
-    track.textContent = file.name;
-    track.title = file.name;
+    customFile = file;
+    customOption.hidden = false;
+    customOption.textContent = file.name;
+    track.value = 'custom';
+    setSource(customFile);
     void play();
   });
 }
@@ -902,7 +949,6 @@ const giftButton = $('#stage-gift');
 const greetingCover = $('#open-greeting');
 const greetingPicture = $('#greeting-picture');
 const largePhoto = $('#large-photo');
-const closeAlbum = $('#close-album');
 const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
 let albumRequest = 0;
 let giftEntrance, coverTurn, pictureReveal;
@@ -910,16 +956,12 @@ let giftEntrance, coverTurn, pictureReveal;
 function selectPhoto(index) {
   const hasPhotos = photos.length > 0;
   $('#greeting-empty').hidden = hasPhotos;
-  $('#greeting-pages').hidden = !hasPhotos;
   largePhoto.hidden = !hasPhotos;
   if (!hasPhotos) return;
   currentPhoto = ((index % photos.length) + photos.length) % photos.length;
   const photo = photos[currentPhoto];
   largePhoto.src = photo.url;
   largePhoto.alt = photo.name;
-  $('#photo-position').textContent = (currentPhoto + 1) + ' / ' + photos.length;
-  $('#previous-photo').disabled = photos.length < 2;
-  $('#next-photo').disabled = photos.length < 2;
 }
 
 function giftBounds() {
@@ -957,7 +999,7 @@ function showPicture() {
   greetingCover.hidden = true;
   greetingPicture.hidden = false;
   dialog.classList.add('show-picture');
-  closeAlbum.focus({ preventScroll: true });
+  greetingPicture.focus({ preventScroll: true });
   if (!motionPreference.matches && greetingPicture.animate) {
     pictureReveal = greetingPicture.animate([
       { transform: 'perspective(880px) rotateY(18deg) scale(.94)', opacity: .42 },
@@ -988,21 +1030,18 @@ function showNextPhoto() {
   const request = ++albumRequest;
   void photosReady.then(() => {
     if (request !== albumRequest) return;
-    if (dialog.open && !greetingCover.hidden) openGreeting();
-    else showGiftCard(currentPhoto + 1);
+    if (!dialog.open) showGiftCard(currentPhoto + 1);
+    else if (!greetingCover.hidden) openGreeting();
   });
 }
 
 giftButton.onclick = showNextPhoto;
 greetingCover.onclick = openGreeting;
-$('#previous-photo').onclick = () => selectPhoto(currentPhoto - 1);
-$('#next-photo').onclick = () => selectPhoto(currentPhoto + 1);
 $('#greeting-add').onclick = () => {
   dialog.close();
   $('#photo-panel').scrollIntoView({ block: 'nearest' });
   $('#photo-file').focus({ preventScroll: true });
 };
-closeAlbum.onclick = () => dialog.close();
 dialog.addEventListener('close', () => {
   giftEntrance?.cancel();
   coverTurn?.cancel();
@@ -1011,11 +1050,9 @@ dialog.addEventListener('close', () => {
   giftButton.classList.remove('is-open');
   dialog.classList.remove('gift-opening');
 });
-dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-dialog.addEventListener('keydown', event => {
-  if (greetingPicture.hidden) return;
-  if (event.key === 'ArrowLeft') selectPhoto(currentPhoto - 1);
-  if (event.key === 'ArrowRight') selectPhoto(currentPhoto + 1);
+dialog.addEventListener('click', event => {
+  const target = event.target;
+  if (target === dialog || target === greetingPicture || target.classList.contains('photo-card')) dialog.close();
 });
 
 function act(action, gesture = false) {
@@ -1050,6 +1087,7 @@ setupMusic(energy => { effects.energy = energy; });
     <div class="camera-box" id="camera-box" hidden><video id="preview" autoplay playsinline muted></video></div>
     <button id="stage-gift" class="stage-gift" type="button" aria-label="打开树下礼盒" aria-haspopup="dialog" hidden>
       <span class="gift-body" aria-hidden="true"></span><span class="gift-lid" aria-hidden="true"></span>
+      <span class="gift-label" aria-hidden="true">打开礼盒</span>
     </button>
     <div class="stage-actions" aria-label="手动控制圣诞树">
       <button data-action="tree" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="m12 3 5 7h-2l4 6H5l4-6H7l5-7zm0 13v5"/></svg>汇聚</button>
@@ -1077,7 +1115,7 @@ setupMusic(energy => { effects.energy = energy; });
     </section>
     <section class="panel music">
       <h2><span class="section-icon" aria-hidden="true">♫</span>音乐律动</h2>
-      <div class="player"><button class="play" id="play" type="button" aria-label="播放音乐">▶</button><div><b id="track">铃儿响叮当</b><small id="track-state">内置音乐 · 点击播放</small></div><label class="upload" for="music-file">换音乐<input id="music-file" type="file" accept="audio/*"></label></div>
+      <div class="player"><button class="play" id="play" type="button" aria-label="播放音乐">▶</button><div><select id="track" aria-label="选择音乐"><option value="jingle">铃儿响叮当</option><option value="silent">平安夜</option><option value="joy">欢乐颂</option><option value="deck">装饰大厅</option><option value="custom" hidden>本地音乐</option></select><small id="track-state">内置音乐 · 点击播放</small></div><label class="upload" for="music-file">本地音乐<input id="music-file" type="file" accept="audio/*"></label></div>
     </section>
     <section class="panel photos" id="photo-panel">
       <h2><span class="section-icon" aria-hidden="true">▧</span>圣诞相册 <span class="photo-count" id="photo-count">0 张</span></h2>
@@ -1089,19 +1127,17 @@ setupMusic(energy => { effects.energy = energy; });
 </main>
 <dialog id="album" aria-label="圣诞贺卡与相册">
   <div class="photo-card">
-    <button class="close" id="close-album" aria-label="关闭相册">×</button>
     <button id="open-greeting" class="greeting-cover" type="button">
       <span class="greeting-star" aria-hidden="true">✦</span>
       <span class="greeting-english">Merry Christmas</span>
       <span>打开贺卡</span>
     </button>
-    <div id="greeting-picture" class="greeting-picture" hidden>
+    <div id="greeting-picture" class="greeting-picture" tabindex="-1" aria-label="点击照片外侧或按 Escape 关闭" hidden>
       <div id="greeting-empty" class="greeting-empty" hidden>
         <p>添加一张照片，把它放进贺卡。</p>
         <button id="greeting-add" type="button">去添加照片</button>
       </div>
       <img id="large-photo" alt="">
-      <div id="greeting-pages" class="album-controls"><button id="previous-photo" aria-label="上一张">‹</button><span id="photo-position"></span><button id="next-photo" aria-label="下一张">›</button></div>
     </div>
   </div>
 </dialog>
