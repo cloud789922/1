@@ -36,7 +36,6 @@ h1{margin:12px 0 4px;font-family:"Songti SC","SimSun",Georgia,serif;font-size:cl
 .stage-heading p{font:italic clamp(18px,2.1vw,30px) Georgia,serif;color:#d1c58e;margin:6px 0}
 .stage-status{position:absolute;top:25px;right:24px;padding:8px 11px;border:1px solid #415341;border-radius:99px;background:#0a1813dd;color:#cdd8c9;font-size:12px;display:flex;align-items:center;gap:7px}
 .stage-status i{width:6px;height:6px;border-radius:50%;background:#a6df9d;box-shadow:0 0 10px #8fb98e}
-.motion{position:absolute;top:65px;right:24px;padding:0 10px;min-height:34px;background:#0a1813dd;color:#d9e7d2;font-size:12px}
 .script-message{position:absolute;inset:44% 16px auto;text-align:center;color:#f4f2e8}
 .stage-actions{position:absolute;inset:auto 0 23px;margin:auto;width:max-content;max-width:95%;display:flex;gap:5px;padding:5px;background:#0b1713ed;border:1px solid #374b3e;border-radius:13px}
 .stage-actions button{padding:0 14px;min-height:38px;display:flex;align-items:center;gap:7px;font-size:14px;border-color:transparent;background:transparent;white-space:nowrap}
@@ -113,15 +112,16 @@ dialog.show-picture .photo-card{padding:clamp(7px,1.5vw,14px);border:1px solid #
 #large-photo{display:block;width:auto;max-width:min(83vw,780px);max-height:min(80vh,80svh);object-fit:contain;background:#060d0a;border-radius:5px}
 @media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr) 290px;gap:12px;padding-inline:15px}.stage-status{top:16px;right:16px}.panel{padding:13px}.stage-heading{top:48px}}
 @media(max-width:680px){.top{height:64px;padding-inline:14px}.brand{font-size:17px;gap:8px}.brand-icon{width:37px;height:37px}.camera{padding-inline:10px}.layout{display:block;padding:12px 12px 24px}.stage{height:clamp(500px,73svh,760px);border-radius:15px}.stage-heading{top:24px;left:17px}.stage-heading h1{font-size:clamp(34px,8.5vw,59px)}.stage-status{font-size:10px;top:12px;right:12px;padding:6px 8px}.stage-actions{bottom:15px}.camera-box{left:10px;bottom:75px}.sidebar{margin-top:12px;grid-template-columns:minmax(0,1fr);gap:10px}}
-@media(max-width:900px){.motion{top:54px;right:16px}}
-@media(max-width:680px){.motion{top:44px;right:12px;min-height:30px}}
 
 </style>
 <script type="module">
 const canvas = document.querySelector('#scene');
 const ctx = canvas.getContext('2d', { alpha: false });
 const giftTarget = document.querySelector('#stage-gift');
+const stageStatus = document.querySelector('#mode').lastChild;
 const tau = Math.PI * 2;
+const formationTime = 2.65;
+const launchStagger = 1.44;
 const maxParticles = 4300;
 const palettes = {
   pine: ['#3a9c67', '#69df95', '#b7fcc3', '#ffe7a0', '#85c58e', '#fff3d5'],
@@ -138,6 +138,10 @@ let width, height, center, top, tall, ground, radius, mobile;
 let spread = 0;
 const random = (max = 1) => Math.random() * max;
 const mix = (a, b, t) => a + (b - a) * t;
+function smoothProgress(value) {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
+}
 const particles = Array.from({ length: maxParticles }, (_, i) => {
   const y = Math.pow(random(), .83);
   const angle = random(tau);
@@ -167,10 +171,7 @@ const ornaments = [
 ];
 const backdrop = document.createElement('canvas');
 const backdropCtx = backdrop.getContext('2d', { alpha: false });
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const motionButton = document.querySelector('#motion');
-let paused = reducedMotion.matches;
-let userControlsMotion = false;
+let introFinished = false;
 let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
 let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
 
@@ -303,8 +304,12 @@ function drawGift(x, y, size, colors) {
 }
 
 function drawScene(t, dt) {
-  spread = paused ? Number(effects.scattered) : mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.4));
-  const energy = paused ? 0 : effects.energy;
+  if (t >= formationTime || effects.scattered) introFinished = true;
+  const forming = !introFinished;
+  const status = forming ? '星光汇聚中' : effects.scattered ? '粒子已散开' : '粒子已汇聚';
+  if (stageStatus.textContent !== status) stageStatus.textContent = status;
+  spread = mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.4));
+  const energy = effects.energy;
   const palette = palettes[effects.palette] || [effects.color, effects.color, effects.color, '#ffe7a0', effects.color, '#fff3d5'];
   ctx.drawImage(backdrop, 0, 0, width, height);
   const rotation = t * .76;
@@ -317,13 +322,28 @@ function drawScene(t, dt) {
     ctx.fillStyle = palette[color];
     for (const p of group) {
       if (p.index >= count) break;
+      // Lower rows take flight first, with an orbit that tightens as each row settles.
+      const travel = forming ? (t - (1 - p.y) * launchStagger + .12 - p.phase * .025) / 1.02 : 1;
+      if (travel < -.18) continue;
       const spin = p.x * cos + p.z * sin;
       const depth = p.z * cos - p.x * sin;
       const wave = Math.sin(t * 1.55 + p.phase);
-      const x = center + mix(spin * radius * (1 + energy * .31), p.sx * width * .49 + wave * 19, spread);
-      const y = mix(top + p.y * tall + depth * tall * .135 + wave * energy * 10, height * .52 + p.sy * height + wave * 18, spread);
-      const s = p.size * (1 + energy * .57 + depth * .38) * sizeBoost + .28 * spread;
-      ctx.globalAlpha = Math.max(.13, Math.min(1, .62 + .22 * wave + .34 * depth + energy * .25));
+      let x = center + mix(spin * radius * (1 + energy * .31), p.sx * width * .49 + wave * 19, spread);
+      let y = mix(top + p.y * tall + depth * tall * .135 + wave * energy * 10, height * .52 + p.sy * height + wave * 18, spread);
+      let s = p.size * (1 + energy * .57 + depth * .38) * sizeBoost + .28 * spread;
+      let alpha = Math.max(.13, Math.min(1, .62 + .22 * wave + .34 * depth + energy * .25));
+      if (travel < 1) {
+        const progress = Math.max(0, travel);
+        const rise = progress * (2 - progress);
+        const landing = smoothProgress((progress - .30) / .70);
+        const orbit = (t * 7.7 + p.y * tau * 2.25 + p.phase * .73);
+        const ring = radius * mix(.87, .20 + p.y * .54, rise) * (.80 + p.phase * .057);
+        x = mix(center + Math.cos(orbit) * ring, x, landing);
+        y = mix(ground + 12 - (1 - p.y) * tall * rise + Math.sin(orbit) * ring * .24, y, landing);
+        s *= mix(1.42, 1, landing);
+        alpha = mix(.86, alpha, landing) * smoothProgress((travel + .18) / .26);
+      }
+      ctx.globalAlpha = alpha;
       if (shape === 'star' || p.light && shape === 'glow') {
         drawSpark(x, y, s * (p.light ? 2.1 : 1.41), .24);
       } else if (shape === 'diamond') {
@@ -341,7 +361,8 @@ function drawScene(t, dt) {
       const x = center + (point.x * cos + point.z * sin) * radius * (1 + energy * .31);
       const y = top + point.y * tall + depth * tall * .138;
       const s = 1.3 + Math.max(0, depth) * 3.1 + energy * 1.4;
-      ctx.globalAlpha = (1 - spread) * (.64 + depth * .34);
+      const lit = forming ? smoothProgress((t - (1 - point.y) * launchStagger - .43) / .64) : 1;
+      ctx.globalAlpha = lit * (1 - spread) * (.64 + depth * .34);
       ctx.fillRect(x - s / 2, y - s / 2, s, s);
     }
     for (const [y, angle, color] of ornaments) {
@@ -349,21 +370,26 @@ function drawScene(t, dt) {
       const x = center + Math.cos(angle - rotation) * y * radius * .94 * (1 + energy * .31);
       const py = top + y * tall + depth * y * tall * .135;
       const size = 2.1 + Math.max(0, depth) * 4 + energy * 2;
-      const alpha = (1 - spread) * (.50 + .43 * depth);
+      const lit = forming ? smoothProgress((t - (1 - y) * launchStagger - .52) / .58) : 1;
+      if (lit === 0) continue;
+      const alpha = lit * (1 - spread) * (.50 + .43 * depth);
       drawHalo(x, py, size * 3.4, alpha * .7);
       ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
       drawSpark(x, py, size, .25);
     }
-    const size = Math.min(34, Math.max(20, width * .037)) + energy * 8;
-    drawHalo(center, top - 7, size * 3.1, .58 * (1 - spread));
-    ctx.globalAlpha = 1 - spread;
-    ctx.fillStyle = '#fff8d2';
-    starPath(center, top - 7, size, 5, .43);
-    ctx.fill();
-    ctx.fillStyle = '#eac578';
-    starPath(center, top - 7, size * .67, 5, .28);
-    ctx.fill();
+    const starLight = forming ? smoothProgress((t - 2.13) / .52) : 1;
+    if (starLight > 0) {
+      const size = (Math.min(34, Math.max(20, width * .037)) + energy * 8) * mix(.56, 1, starLight);
+      drawHalo(center, top - 7, size * 3.1, starLight * .58 * (1 - spread));
+      ctx.globalAlpha = starLight * (1 - spread);
+      ctx.fillStyle = '#fff8d2';
+      starPath(center, top - 7, size, 5, .43);
+      ctx.fill();
+      ctx.fillStyle = '#eac578';
+      starPath(center, top - 7, size * .67, 5, .28);
+      ctx.fill();
+    }
     ctx.globalAlpha = 1;
   }
   if (giftColors[effects.gift] && spread < .99) {
@@ -407,14 +433,13 @@ function render(now) {
   frame = 0;
   const targetStep = mobile ? 1000 / 30 : 1000 / 60;
   const step = lastFrame ? now - lastFrame : targetStep;
-  if (!paused && step < targetStep - 2) {
+  if (step < targetStep - 2) {
     invalidateScene();
     return;
   }
-  if (!paused && lastFrame) elapsed += Math.min(step, 100);
+  if (lastFrame) elapsed += Math.min(step, 100);
   const start = performance.now();
   drawScene(elapsed / 1000, Math.min(step, 100) / 1000);
-  if (paused) return;
   lastFrame = now;
   averageCost = mix(averageCost, performance.now() - start, .12);
   averageStep = mix(averageStep || step, step, .12);
@@ -441,25 +466,6 @@ function updateVisibility() {
   invalidateScene();
 }
 
-function updateMotion() {
-  motionButton.textContent = paused ? '播放动效' : '暂停动效';
-  lastFrame = 0;
-  invalidateScene();
-}
-
-motionButton.addEventListener('click', () => {
-  userControlsMotion = true;
-  paused = !paused;
-  updateMotion();
-});
-function syncMotionPreference() {
-  if (!userControlsMotion) {
-    paused = reducedMotion.matches;
-    updateMotion();
-  }
-}
-if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', syncMotionPreference);
-else reducedMotion.addListener(syncMotionPreference);
 document.addEventListener('visibilitychange', updateVisibility);
 if (typeof IntersectionObserver !== 'undefined') {
   new IntersectionObserver(([entry]) => {
@@ -470,7 +476,6 @@ if (typeof IntersectionObserver !== 'undefined') {
 if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(canvas);
 else window.addEventListener('resize', resize);
 resize();
-updateMotion();
 
 const modelBase = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21';
 const modelUrl = 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task';
@@ -810,7 +815,6 @@ function setupMusic(onEnergy) {
 
 
 const $ = selector => document.querySelector(selector);
-const status = $('#mode');
 const photos = [];
 let currentPhoto = -1;
 let settings = {};
@@ -840,7 +844,6 @@ for (const [id, key] of Object.entries({
 
 function setScene(action) {
   effects.scattered = action === 'scatter';
-  status.lastChild.textContent = effects.scattered ? '粒子已散开' : '粒子已汇聚';
   syncGiftControl();
   for (const button of document.querySelectorAll('[aria-pressed][data-action]')) {
     button.setAttribute('aria-pressed', String(button.dataset.action === action));
@@ -1081,8 +1084,7 @@ setupMusic(energy => { effects.energy = energy; });
   <section class="stage" aria-label="互动粒子圣诞树">
     <canvas id="scene"></canvas>
     <div class="stage-heading"><span class="eyebrow">✦ &nbsp; WINTER WONDERLAND</span><h1>圣诞星光</h1><p>Merry Christmas</p></div>
-    <div class="stage-status" id="mode"><i></i>粒子已汇聚</div>
-    <button class="motion" id="motion" type="button">暂停动效</button>
+    <div class="stage-status" id="mode"><i></i>星光汇聚中</div>
     <noscript><p class="script-message">请开启 JavaScript 后重新打开星树。</p></noscript>
     <div class="camera-box" id="camera-box" hidden><video id="preview" autoplay playsinline muted></video></div>
     <button id="stage-gift" class="stage-gift" type="button" aria-label="打开树下礼盒" aria-haspopup="dialog" hidden>
