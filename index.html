@@ -257,6 +257,10 @@ const winterThemes = {
 };
 const backdrop = document.createElement('canvas');
 const backdropCtx = backdrop.getContext('2d', { alpha: false });
+const previousBackdrop = document.createElement('canvas');
+const previousBackdropCtx = previousBackdrop.getContext('2d', { alpha: false });
+const backdropFadeDuration = .82;
+let backdropFadeStart = null;
 let introFinished = false;
 let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
 let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
@@ -302,17 +306,52 @@ function resize() {
   center = width * (mobile ? .51 : .535);
   ground = height * (mobile ? .74 : .765);
   worldScale = Math.min(height * (mobile ? .45 : .55) / treeHeight, width / 5.6);
+  backdrop.width = canvas.width;
+  backdrop.height = canvas.height;
+  backdropCtx.setTransform(backdrop.width / width, 0, 0, backdrop.height / height, 0, 0);
+  backdropFadeStart = null;
   drawBackdrop();
   invalidateScene();
 }
 
 
 function drawBackdrop() {
-  backdrop.width = canvas.width;
-  backdrop.height = canvas.height;
-  backdropCtx.setTransform(backdrop.width / width, 0, 0, backdrop.height / height, 0, 0);
   backdropTheme = effects.scenery;
   drawWinterLandscape(backdropCtx);
+}
+
+function backdropFadeProgress(t) {
+  return backdropFadeStart === null || reducedSceneMotion.matches
+    ? 1
+    : smoothProgress((t - backdropFadeStart) / backdropFadeDuration);
+}
+
+function drawSceneBackdrop(t) {
+  let progress = backdropFadeProgress(t);
+  if (backdropTheme !== effects.scenery) {
+    if (!reducedSceneMotion.matches) {
+      if (previousBackdrop.width !== backdrop.width || previousBackdrop.height !== backdrop.height) {
+        previousBackdrop.width = backdrop.width;
+        previousBackdrop.height = backdrop.height;
+      }
+      // Start rapid switches from the blend currently on screen.
+      previousBackdropCtx.globalAlpha = progress;
+      previousBackdropCtx.drawImage(backdrop, 0, 0);
+      previousBackdropCtx.globalAlpha = 1;
+      backdropFadeStart = t;
+      progress = 0;
+    }
+    drawBackdrop();
+  }
+
+  if (progress < 1) {
+    ctx.drawImage(previousBackdrop, 0, 0, width, height);
+    ctx.globalAlpha = progress;
+  } else {
+    backdropFadeStart = null;
+  }
+  ctx.drawImage(backdrop, 0, 0, width, height);
+  ctx.globalAlpha = 1;
 }
 
 function softPatch(paint, x, y, wide, high, color, opacity, angle = 0) {
@@ -1179,8 +1218,7 @@ function drawScene(t, dt) {
   cameraCos = Math.cos(angle);
   cameraSin = Math.sin(angle);
   galaxyWidth = Math.max(1, Math.min(2.8, width / (worldScale * 5.5)));
-  if (backdropTheme !== effects.scenery) drawBackdrop();
-  ctx.drawImage(backdrop, 0, 0, width, height);
+  drawSceneBackdrop(t);
   drawSleighFlight(t);
   drawSnowContact();
   const trunk = (1 - spread) * (forming ? smoothProgress((t - .76) / 1.48) : 1);
