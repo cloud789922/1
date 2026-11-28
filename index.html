@@ -247,6 +247,12 @@ const particles = Array.from({ length: maxParticles }, (_, i) => {
 });
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
 const snow = Array.from({length: 96}, () => [random(), random(), random(1.7) + .3, random()]);
+const sceneSweepFlakes = Array.from({ length: 28 }, (_, index) => ({
+  delay: random(.31),
+  height: .08 + random(.76),
+  size: index % 7 === 0 ? 3.6 + random(2.7) : .9 + random(2.1),
+  drift: random(1),
+}));
 let nextSleighAt = 7 + random(7);
 let sleighFlight;
 const winterThemes = {
@@ -259,8 +265,9 @@ const backdrop = document.createElement('canvas');
 const backdropCtx = backdrop.getContext('2d', { alpha: false });
 const previousBackdrop = document.createElement('canvas');
 const previousBackdropCtx = previousBackdrop.getContext('2d', { alpha: false });
-const backdropFadeDuration = .82;
+const backdropFadeDuration = 1.35;
 let backdropFadeStart = null;
+let sceneSweepStart = null;
 let introFinished = false;
 let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
 let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
@@ -310,6 +317,7 @@ function resize() {
   backdrop.height = canvas.height;
   backdropCtx.setTransform(backdrop.width / width, 0, 0, backdrop.height / height, 0, 0);
   backdropFadeStart = null;
+  sceneSweepStart = null;
   drawBackdrop();
   invalidateScene();
 }
@@ -339,6 +347,7 @@ function drawSceneBackdrop(t) {
       previousBackdropCtx.drawImage(backdrop, 0, 0);
       previousBackdropCtx.globalAlpha = 1;
       backdropFadeStart = t;
+      if (sceneSweepStart === null || t - sceneSweepStart >= backdropFadeDuration) sceneSweepStart = t;
       progress = 0;
     }
     drawBackdrop();
@@ -351,6 +360,37 @@ function drawSceneBackdrop(t) {
     backdropFadeStart = null;
   }
   ctx.drawImage(backdrop, 0, 0, width, height);
+  ctx.globalAlpha = 1;
+}
+
+function drawSceneSnowSweep(t) {
+  if (sceneSweepStart === null) return;
+  const progress = (t - sceneSweepStart) / backdropFadeDuration;
+  if (reducedSceneMotion.matches || progress >= 1) {
+    sceneSweepStart = null;
+    return;
+  }
+  const envelope = smoothProgress(progress / .20) * smoothProgress((1 - progress) / .32);
+  ctx.fillStyle = '#f4f8ff';
+  for (const [index, flake] of sceneSweepFlakes.entries()) {
+    if (mobile && index % 3 === 1) continue;
+    const fly = (progress - flake.delay * .54) / (.69 + flake.delay * .40);
+    const x = width * (1.04 - fly * 1.14);
+    const y = height * (flake.height + fly * (.15 + flake.drift * .15)) + Math.sin(fly * 8 + index) * 6;
+    if (x < -12 || x > width + 12 || y > height + 12) continue;
+    const size = flake.size * (mobile ? .76 : 1);
+    ctx.globalAlpha = envelope * (.23 + flake.drift * .38);
+    if (index % 7 === 0) {
+      starPath(x, y, size, 6, .30);
+      ctx.fill();
+    } else if (index % 3 === 0) {
+      ctx.drawImage(iceHalo, x - size * 3.5, y - size * 2, size * 7, size * 4);
+    } else {
+      ctx.beginPath();
+      ctx.arc(x, y, size * .66, 0, tau);
+      ctx.fill();
+    }
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -1245,6 +1285,7 @@ function drawScene(t, dt) {
     }
   }
   ctx.globalAlpha = 1;
+  drawSceneSnowSweep(t);
 }
 
 function syncGiftControl() {
