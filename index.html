@@ -149,26 +149,20 @@ small, .hint { color: var(--muted); font-size: 12px; }
 .thumb .remove { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; padding: 0; border-radius: 50%; }
 .download-wish { width: 100%; min-height: 43px; padding: 4px; background: #e5c587; border: 0; color: #221b23; font-size: 15px; font-weight: 700; }
 .download-wish:hover { background: #f8daa1; }
-#album { width: min(83vw,334px); max-width: calc(100vw - 25px); border: 0; background: transparent; overflow: visible; }
+#album { width: fit-content; max-width: calc(100vw - 25px); border: 0; background: transparent; overflow: visible; }
+#album::backdrop { background: radial-gradient(ellipse at 25% 20%,#875b403d,transparent 49%),#040817d9; backdrop-filter: blur(5px); }
 #album.gift-opening::backdrop { animation: gift-backdrop 620ms ease-out; }
+#album.picture-loading .photo-card { opacity: 0; }
 @keyframes gift-backdrop { 0%,32% { opacity: 0; } 100% { opacity: 1; } }
-#album.show-picture { width: fit-content; }
-#album.show-picture::backdrop { background: radial-gradient(ellipse at 25% 20%,#875b403d,transparent 49%),#040817d9; backdrop-filter: blur(5px); }
-#album.show-picture .photo-card { padding: clamp(6px,1.4vw,12px); border: 1px solid #dcbb7a; border-radius: 12px; background: #c2a575; box-shadow: 0 0 58px #e9c37568,0 25px 75px #0008; }
-.greeting-cover { position: relative; width: 100%; min-height: 238px; display: grid; place-items: center; align-content: center; gap: 13px; padding: 25px; border: 1px solid #d6b16a; border-radius: 11px; background: radial-gradient(ellipse at 48% 20%,#453552,#191d3c 57%,#11182c); color: #ffe8b3; box-shadow: 0 24px 50px #0009; backface-visibility: hidden; }
-.greeting-cover::before { content: ""; position: absolute; inset: 10px; border: 1px solid #e5c17b73; border-radius: 6px; pointer-events: none; }
-.greeting-cover:hover { background: radial-gradient(ellipse at 48% 20%,#5b425a,#25284a 57%,#141b32); }
-.greeting-star { font: 45px/1 Georgia,serif; text-shadow: 0 0 23px #ffd57d; }
-.greeting-english { font: italic 28px/1.1 Georgia,serif; }
-.greeting-cover span:last-child { font-size: 13px; }
+.photo-card { padding: clamp(6px,1.4vw,12px); border: 1px solid #dcbb7a; border-radius: 12px; background: #c2a575; box-shadow: 0 0 58px #e9c37568,0 25px 75px #0008; }
+.photo-card:focus { outline: 0; }
 #large-photo { display: block; width: auto; max-width: min(82vw,800px); max-height: 78svh; border-radius: 5px; }
 .large-gift { width: min(72vw,68svh,345px); aspect-ratio: 1; padding: clamp(10px,2.4vw,18px); text-align: center; box-shadow: 0 0 44px #ffd89770,0 18px 55px #000b; }
 .large-gift .memory-art { align-content: center; gap: 15px; }
 .large-gift .memory-art span { font-size: clamp(52px,14vw,114px); }
 .large-gift strong { font-size: clamp(13px,3vw,18px); }
-.greeting-picture:focus { outline: 0; }
-.greeting-empty { background: #172239; border-radius: 5px; padding: 16px; text-align: center; }
-.greeting-empty button { min-height: 35px; }
+.album-empty { background: #172239; border-radius: 5px; padding: 16px; text-align: center; }
+.album-empty button { min-height: 35px; }
 @media (min-width:800px) { .title-break { display: block; } }
 @media (max-width:680px) {
   .stage-heading { max-width: 69vw; }
@@ -1641,18 +1635,17 @@ $('#photo-file').addEventListener('change', async event => {
 });
 
 const dialog = $('#album');
-const greetingCover = $('#open-greeting');
-const greetingPicture = $('#greeting-picture');
+const photoCard = dialog.querySelector('.photo-card');
 const largePhoto = $('#large-photo');
 const largeGift = $('#large-gift');
 const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
 let albumRequest = 0;
-let giftEntrance, coverTurn, pictureReveal;
+let pictureReveal;
 let openGift, previousGift;
 let nextGiftIndex = 0;
 
 function setPicture(entry) {
-  $('#greeting-empty').hidden = Boolean(entry);
+  $('#album-empty').hidden = Boolean(entry);
   largePhoto.hidden = !entry?.photo;
   largeGift.hidden = !entry || Boolean(entry.photo);
   if (entry?.photo) {
@@ -1678,12 +1671,34 @@ function nextMemory(index) {
   return null;
 }
 
-function showMemoryEntry(entry, origin) {
+function showMemoryEntry(entry, origin, box) {
   if (dialog.open) return;
+  const request = ++albumRequest;
+  pictureReveal?.cancel();
+  openGift?.classList.remove('is-open');
+  openGift = box;
+  if (box) {
+    previousGift = box;
+    box.classList.add('is-open');
+  }
   setPicture(entry);
-  greetingCover.hidden = true;
+  const motion = !motionPreference.matches && photoCard.animate;
+  dialog.classList.toggle('gift-opening', Boolean(box && motion));
+  dialog.classList.remove('picture-loading');
   dialog.showModal();
-  showPicture(origin);
+  photoCard.focus({ preventScroll: true });
+  if (!motion) return;
+  if (entry?.photo && !largePhoto.complete && largePhoto.decode) {
+    dialog.classList.add('picture-loading');
+    const reveal = () => {
+      if (request !== albumRequest || !dialog.open) return;
+      dialog.classList.remove('picture-loading');
+      animatePicture(origin, Boolean(box));
+    };
+    void largePhoto.decode().then(reveal, reveal);
+  } else {
+    animatePicture(origin, Boolean(box));
+  }
 }
 
 function chooseGift(requestedGift) {
@@ -1697,103 +1712,54 @@ function chooseGift(requestedGift) {
   return available[Math.floor(Math.random() * available.length)];
 }
 
-function showGiftCard(index, requestedGift) {
-  if (dialog.open) return;
-  setPicture(nextMemory(index));
-  const chosen = chooseGift(requestedGift);
-  const origin = motionPreference.matches ? null : chosen?.bounds;
-  if (chosen) {
-    openGift = previousGift = chosen.button;
-    openGift.classList.add('is-open');
-  }
-  if (origin && greetingCover.animate) {
-    dialog.classList.add('gift-opening');
-  }
-  greetingCover.hidden = false;
-  greetingPicture.hidden = true;
-  dialog.classList.remove('show-picture');
-  dialog.showModal();
-  greetingCover.focus({ preventScroll: true });
-  if (!origin || !greetingCover.animate) return;
-
-  const card = greetingCover.getBoundingClientRect();
-  const left = origin.left + origin.width / 2 - card.left - card.width / 2;
-  const top = origin.top + origin.height * .46 - card.top - card.height / 2;
-  giftEntrance = greetingCover.animate([
-    { transform: `translate(${left}px,${top}px) scale(.09) rotate(-9deg)`, opacity: 0, offset: 0 },
-    { transform: `translate(${left}px,${top - 24}px) scale(.18) rotate(-8deg)`, opacity: 1, offset: .27 },
-    { transform: 'translate(0,0) scale(1) rotate(0)', opacity: 1, offset: 1 },
-  ], { duration: 620, easing: 'cubic-bezier(.16,.72,.32,1)' });
-}
-
-function showPicture(origin) {
-  greetingCover.hidden = true;
-  greetingPicture.hidden = false;
-  dialog.classList.add('show-picture');
-  greetingPicture.focus({ preventScroll: true });
-  if (!motionPreference.matches && greetingPicture.animate) {
-    let start = { transform: 'perspective(880px) rotateY(18deg) scale(.94)', opacity: .42 };
-    if (origin) {
-      const revealed = greetingPicture.getBoundingClientRect();
-      const x = origin.left + origin.width / 2 - revealed.left - revealed.width / 2;
-      const y = origin.top + origin.height / 2 - revealed.top - revealed.height / 2;
-      const scale = origin.width / revealed.width;
-      start = { transform: `translate(${x}px,${y}px) rotate(-6deg) scale(${scale})`, opacity: .8 };
+function animatePicture(origin, fromBox) {
+  const keys = [];
+  if (origin) {
+    const revealed = photoCard.getBoundingClientRect();
+    const x = origin.left + origin.width / 2 - revealed.left - revealed.width / 2;
+    const y = origin.top + origin.height * (fromBox ? .29 : .5) - revealed.top - revealed.height / 2;
+    const scale = Math.min(origin.width / revealed.width, origin.height / revealed.height);
+    keys.push({ transform: `translate(${x}px,${y}px) rotate(-7deg) scale(${scale})`, opacity: fromBox ? 0 : .8 });
+    if (fromBox) {
+      keys.push({ transform: `translate(${x}px,${y - 24}px) rotate(-5deg) scale(${Math.min(.35, scale * 1.75)})`, opacity: 1, offset: .28 });
     }
-    pictureReveal = greetingPicture.animate([
-      start,
-      { transform: 'perspective(880px) rotateY(0) scale(1)', opacity: 1 },
-    ], { duration: origin ? 440 : 270, easing: 'cubic-bezier(.2,.72,.26,1)' });
+  } else {
+    keys.push({ transform: 'perspective(880px) rotateY(16deg) scale(.94)', opacity: .42 });
   }
-}
-
-function openGreeting() {
-  if (!dialog.open || greetingCover.hidden || coverTurn) return;
-  giftEntrance?.cancel();
-  if (motionPreference.matches || !greetingCover.animate) {
-    showPicture();
-    return;
-  }
-  coverTurn = greetingCover.animate([
-    { transform: 'perspective(880px) rotateY(0)', transformOrigin: 'left center', opacity: 1 },
-    { transform: 'perspective(880px) rotateY(-85deg)', transformOrigin: 'left center', opacity: .35 },
-  ], { duration: 235, easing: 'ease-in', fill: 'forwards' });
-  coverTurn.onfinish = () => {
-    coverTurn.cancel();
-    coverTurn = null;
-    if (dialog.open) showPicture();
-  };
+  keys.push({ transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 });
+  pictureReveal = photoCard.animate(keys, {
+    duration: fromBox ? 620 : origin ? 440 : 270,
+    easing: 'cubic-bezier(.2,.72,.26,1)',
+  });
 }
 
 function showNextPhoto(requestedGift) {
+  if (dialog.open) return;
   const request = ++albumRequest;
   void photosReady.then(() => {
-    if (request !== albumRequest) return;
-    if (!dialog.open) showGiftCard(currentPhoto + 1, requestedGift);
-    else if (!greetingCover.hidden) openGreeting();
+    if (request !== albumRequest || dialog.open) return;
+    const chosen = chooseGift(requestedGift);
+    showMemoryEntry(nextMemory(currentPhoto + 1), chosen?.bounds, chosen?.button);
   });
 }
 
 for (const gift of stageGifts) gift.onclick = () => showNextPhoto(gift);
-greetingCover.onclick = openGreeting;
-$('#greeting-add').onclick = () => {
+$('#album-add').onclick = () => {
   dialog.close();
   studio.showModal();
   $('#photo-panel').scrollIntoView({ block: 'nearest' });
   $('#photo-file').focus({ preventScroll: true });
 };
 dialog.addEventListener('close', () => {
-  giftEntrance?.cancel();
-  coverTurn?.cancel();
+  if (dialog.open) return;
   pictureReveal?.cancel();
-  giftEntrance = coverTurn = pictureReveal = null;
+  pictureReveal = null;
   openGift?.classList.remove('is-open');
   openGift = null;
-  dialog.classList.remove('gift-opening');
+  dialog.classList.remove('gift-opening', 'picture-loading');
 });
 dialog.addEventListener('click', event => {
-  const target = event.target;
-  if (target === dialog || target === greetingPicture || target.classList.contains('photo-card')) dialog.close();
+  if (event.target === dialog || event.target === photoCard) dialog.close();
 });
 
 function act(action, gesture = false) {
@@ -2041,21 +2007,14 @@ shareButton.onclick = async () => {
     </section>
   </div>
 </dialog>
-<dialog id="album" aria-label="圣诞贺卡与相册">
-  <div class="photo-card">
-    <button id="open-greeting" class="greeting-cover" type="button">
-      <span class="greeting-star" aria-hidden="true">✦</span>
-      <span class="greeting-english">Merry Christmas</span>
-      <span>打开贺卡</span>
-    </button>
-    <div id="greeting-picture" class="greeting-picture" tabindex="-1" aria-label="点击照片外侧或按 Escape 关闭" hidden>
-      <div id="greeting-empty" class="greeting-empty" hidden>
-        <p>添加一张照片，把它放进贺卡。</p>
-        <button id="greeting-add" type="button">去添加照片</button>
-      </div>
-      <img id="large-photo" alt="">
-      <div id="large-gift" class="large-gift" hidden><div class="memory-art"><span aria-hidden="true"></span><strong></strong></div></div>
+<dialog id="album" aria-label="圣诞相册">
+  <div class="photo-card" tabindex="-1" aria-label="点击照片外侧或按 Escape 关闭">
+    <div id="album-empty" class="album-empty" hidden>
+      <p>添加照片后，打开礼盒就能看到。</p>
+      <button id="album-add" type="button">去添加照片</button>
     </div>
+    <img id="large-photo" alt="" hidden>
+    <div id="large-gift" class="large-gift" hidden><div class="memory-art"><span aria-hidden="true"></span><strong></strong></div></div>
   </div>
 </dialog>
 </body>
