@@ -79,9 +79,7 @@ h1 { margin: 12px 0 0; font: 400 clamp(42px,6.7vw,106px)/.83 Georgia,serif; lett
 .stage-scene { position: absolute; top: clamp(22px,5.8vh,56px); right: clamp(16px,4.2vw,65px); display: grid; gap: 5px; }
 .stage-scene label { font-size: 12px; color: #d6dfed; }
 .stage-scene select { min-width: 114px; background-color: #0b142cc2; }
-.stage-scene button { position: absolute; right: 0; top: 100px; padding: 5px 8px; background: #0b142cc2; font-size: 12px; }
-.stage-status { position: absolute; right: clamp(16px,4.2vw,65px); top: calc(clamp(22px,5.8vh,56px) + 71px); display: flex; align-items: center; gap: 7px; color: #d9e3f3; font-size: 12px; pointer-events: none; }
-.stage-status i { background: #f4d78b; width: 5px; height: 5px; border-radius: 100%; box-shadow: 0 0 8px #e8c976; }
+.stage-scene button { position: absolute; right: 0; top: 71px; padding: 5px 8px; background: #0b142cc2; font-size: 12px; }
 .stage-actions { display: flex; gap: 5px; position: absolute; z-index: 8; bottom: max(23px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); padding: 6px; border: 1px solid #b7c8ee4d; border-radius: 18px; background: #0b172deb; box-shadow: 0 12px 46px #0007; white-space: nowrap; }
 .stage-actions button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 11px; border-color: transparent; background: transparent; font-size: 14px; }
 .stage-actions button:hover { background: #263657; }
@@ -199,8 +197,7 @@ small, .hint { color: var(--muted); font-size: 12px; }
   .countdown { margin-top: 7px; font-size: 10px; }
   .stage-scene { right: 12px; }
   .stage-scene select { min-width: 99px; padding: 6px; font-size: 12px; }
-  .stage-status { right: 13px; top: calc(clamp(22px,5.8vh,56px) + 62px); font-size: 11px; }
-  .stage-scene button { top: 85px; }
+  .stage-scene button { top: 62px; }
   .stage-actions { gap: 2px; bottom: max(13px,env(safe-area-inset-bottom)); padding: 4px; }
   .stage-actions button { flex-direction: column; gap: 3px; min-height: 44px; width: clamp(43px,13vw,64px); padding: 0 4px; font-size: 11px; }
   .stage-actions svg { width: 16px; height: 16px; }
@@ -215,7 +212,6 @@ small, .hint { color: var(--muted); font-size: 12px; }
 const canvas = document.querySelector('#scene');
 const ctx = canvas.getContext('2d', { alpha: false });
 const giftStage = document.querySelector('#stage-gifts');
-const stageStatus = document.querySelector('#mode');
 const albumDialog = document.querySelector('#album');
 const reducedSceneMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const tau = Math.PI * 2;
@@ -1294,10 +1290,7 @@ function drawWorld() {
 }
 
 function drawScene(t, dt) {
-  if (!introFinished && (t >= formationTime || effects.scattered || reducedSceneMotion.matches)) {
-    introFinished = true;
-    stageStatus.hidden = true;
-  }
+  if (t >= formationTime || effects.scattered || reducedSceneMotion.matches) introFinished = true;
   const forming = !introFinished;
   spread = mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.1));
   orbitAngle = mix(orbitAngle, effects.orbit, 1 - Math.exp(-dt * 7));
@@ -2306,7 +2299,6 @@ shareButton.onclick = async () => {
     <div class="stage-scene"><label for="setting-scene">冬夜场景</label><select id="setting-scene">
       <option value="forest">月夜雪林</option><option value="cabin">壁炉小屋</option><option value="aurora">极光山谷</option><option value="dawn">晨曦雪原</option>
     </select><button id="fullscreen" type="button" hidden>全屏</button></div>
-    <div class="stage-status" id="mode"><i></i>星光汇聚中</div>
     <p class="orbit-hint" id="orbit-hint" hidden>拖动雪地转动星河</p>
     <noscript><p class="script-message">请开启 JavaScript 后重新打开星树。</p></noscript>
     <div class="camera-box" id="camera-box" hidden><video id="preview" autoplay playsinline muted></video></div>
