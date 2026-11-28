@@ -33,9 +33,9 @@ svg {
   stroke-linecap: round; stroke-linejoin: round;
 }
 .stage { position: relative; isolation: isolate; height: 100vh; height: 100svh; min-height: 510px; overflow: hidden; background: #081328; }
-#scene { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+#scene { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
 .stage[data-orbit=true] #scene { cursor: grab; touch-action: none; }
-.stage[data-orbit=true] #scene:active { cursor: grabbing; }
+#scene:active { cursor: grabbing; }
 .stage-heading { position: absolute; top: clamp(23px,6vh,67px); left: clamp(20px,6vw,100px); max-width: min(48vw,440px); pointer-events: none; }
 .eyebrow { display: flex; align-items: center; gap: .55rem; color: #f1dba0; font-size: 14px; font-weight: 650; letter-spacing: .20em; }
 .eyebrow span { font-size: 21px; }
@@ -63,104 +63,40 @@ h1 { margin: 12px 0 0; font: 400 clamp(42px,6.7vw,106px)/.83 Georgia,serif; lett
 .camera-feedback { position: absolute; right: 22px; bottom: 59px; z-index: 9; max-width: min(45vw,310px); font-size: 12px; color: #e0e9fb; text-shadow: 0 1px 7px #000; }
 .orbit-hint { position: absolute; z-index: 5; bottom: 78px; left: 50%; transform: translateX(-50%); margin: 0; color: #dae5fb; font-size: 12px; white-space: nowrap; pointer-events: none; }
 .script-message { position: absolute; inset: 45% 20px auto; text-align: center; }
-.stage-gifts, .floating-memories { position: absolute; inset: 0; pointer-events: none; }
-.stage-gift {
-  --paper: #fac39a;
-  --ribbon: #fff1ce;
-  position: absolute;
-  aspect-ratio: 1;
-  padding: 0;
-  border: 0;
-  border-radius: 2px;
-  background: transparent;
-  pointer-events: auto;
-  isolation: isolate;
-}
-.stage-gift[data-tone=red] { --paper: #d52a41; }
-.stage-gift[data-tone=pink] { --paper: #df819a; }
-.stage-gift[data-tone=cream] { --paper: #eee1c9; }
-.stage-gifts[data-style=ice] .stage-gift { --ribbon: #deeffa; }
-.stage-gifts[data-style=ice] .stage-gift[data-tone=red] { --paper: #477fae; }
-.stage-gifts[data-style=ice] .stage-gift[data-tone=pink] { --paper: #78aebb; }
-.stage-gifts[data-style=pink] .stage-gift[data-tone=red] { --paper: #b04068; }
-.stage-gifts[data-style=pink] .stage-gift[data-tone=cream] { --paper: #f6c8cf; }
-.stage-gift::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 72% -14% -9%;
-  background: radial-gradient(ellipse,#03081ae8,transparent 72%);
-}
-.stage-gifts[inert] .stage-gift { pointer-events: none; }
-.stage-gifts[inert] .stage-gift::before { opacity: 0; }
-.stage-gift:hover, .stage-gift:focus-visible, .stage-gift.is-open { z-index: 1; background: transparent; filter: brightness(1.18); }
-.gift-face {
-  position: absolute;
-  inset: 0;
-  display: block;
-  pointer-events: none;
-  transform: rotate(var(--gift-angle,0deg));
-}
-.gift-front {
-  clip-path: polygon(4% 33%,38% 47%,38% 93%,4% 78%);
-  background: linear-gradient(145deg,#fff4dc26,transparent 45%,#150a27a6),
-    linear-gradient(90deg,transparent 17%,var(--ribbon) 17% 25%,transparent 25%),var(--paper);
-}
-.gift-side {
-  clip-path: polygon(37.8% 47%,95% 31%,95% 76%,37.8% 93%);
-  background: linear-gradient(165deg,#fff3da24,transparent 61%,#140b2761),
-    linear-gradient(90deg,transparent 62%,var(--ribbon) 62% 71%,transparent 71%),var(--paper);
-}
-.gift-lid {
-  clip-path: polygon(3% 34%,60% 16%,96% 30%,96% 36%,38% 53%,3% 39%);
-  background: linear-gradient(155deg,#fff5d6b8,transparent 49%),
-    linear-gradient(164deg,transparent 32%,var(--ribbon) 32% 37%,transparent 37%),
-    linear-gradient(24deg,transparent 51%,var(--ribbon) 51% 57%,transparent 57%),var(--paper);
-  transition: transform .36s cubic-bezier(.19,.82,.31,1);
-}
-.stage-gift.is-open .gift-lid { transform: translate(20%,-38%) rotate(26deg); }
-.stage-gift.is-open::after {
-  content: "";
-  position: absolute;
-  inset: -35% -20% 17%;
-  background: radial-gradient(ellipse at 50% 72%,#fff2c3df, #ffd98d65 27%,transparent 58%);
-  pointer-events: none;
-  animation: gift-shine 620ms ease-out both;
-}
-@keyframes gift-shine { from { opacity: 0; } 30% { opacity: 1; } to { opacity: .35; } }
-.floating-memories { z-index: 3; }
-.memory-token, .large-gift {
-  --frame: #e8caa1;
-  --mat: #fff3e6;
-  border: 1px solid #fae8c8;
-  border-radius: 3px;
-  background: linear-gradient(145deg,#fff1d4,var(--frame) 58%,#b78f70);
-  color: #402838;
-}
-.memory-token {
+
+.stage-gifts, .floating-memories { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.stage-gift, .memory-token {
   position: absolute;
   top: 0;
   left: 0;
-  display: grid;
-  place-items: stretch;
-  width: clamp(43px,4.65vw,66px);
-  aspect-ratio: 1;
-  padding: clamp(4px,.54vw,8px);
-  box-shadow: 0 0 14px #ffe4b080,0 3px 9px #20102e9e;
-  font-size: clamp(19px,2.35vw,32px);
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: transparent;
+  padding: 0;
   pointer-events: auto;
 }
-.memory-token:hover, .memory-token:focus-visible { background: #fff1d4; border-color: white; box-shadow: 0 0 20px #ffe8a3cf; }
-.memory-token img, .memory-art {
+.stage-gift:hover, .memory-token:hover { background: #fff0c625; }
+.stage-gifts[inert] .stage-gift { pointer-events: none; }
+.memory-token > * { visibility: hidden; }
+.large-gift {
+  --mat: #fff3e6;
+  border: 1px solid #fae8c8;
+  border-radius: 3px;
+  background: linear-gradient(145deg,#fff1d4,#e8caa1 58%,#b78f70);
+  color: #402838;
+}
+.memory-art {
   width: 100%;
   height: 100%;
   min-height: 0;
   border: 1px solid #a97f69;
   box-shadow: inset 0 1px 5px #86605630;
   background: radial-gradient(ellipse at 28% 20%,#fffaf4,var(--mat) 73%,#e4cbca);
+  display: grid;
+  place-items: center;
+  line-height: 1;
 }
-.memory-token img { object-fit: cover; }
-.memory-art { display: grid; place-items: center; line-height: 1; }
 dialog { padding: 0; color: var(--text); }
 dialog::backdrop { background: #04091bb3; }
 .studio { margin: 0 0 0 auto; width: min(100%,405px); max-width: none; height: 100%; max-height: none; inset: 0 0 0 auto; border: 0; border-left: 1px solid #a8bce94d; background: #101a2f; overflow: auto; }
@@ -249,12 +185,8 @@ small, .hint { color: var(--muted); font-size: 12px; }
   .camera-box { right: 9px; bottom: 68px; width: 80px; }
   .camera-feedback { bottom: 66px; right: 96px; }
   .orbit-hint { bottom: 69px; font-size: 11px; }
-  .memory-token { width: 38px; font-size: 18px; padding: 4px; }
 }
-@media (prefers-reduced-motion:reduce) {
-  .gift-lid { transition: none; }
-  .stage-gift.is-open::after { animation: none; }
-}
+
 
 </style>
 <script type="module">
@@ -262,10 +194,16 @@ const canvas = document.querySelector('#scene');
 const ctx = canvas.getContext('2d', { alpha: false });
 const giftStage = document.querySelector('#stage-gifts');
 const stageStatus = document.querySelector('#mode').lastChild;
+const albumDialog = document.querySelector('#album');
+const reducedSceneMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const tau = Math.PI * 2;
-const formationTime = 2.28;
-const launchStagger = .89;
-const spiralTime = 1.48;
+const formationTime = 2.7;
+const treeHeight = 5.2;
+const treeRadius = 1.56;
+const cameraDistance = 11;
+const cameraTilt = .21;
+const tiltCos = Math.cos(cameraTilt);
+const tiltSin = Math.sin(cameraTilt);
 const maxParticles = 4300;
 const palettes = {
   pine: ['#3a9c67', '#69df95', '#b7fcc3', '#ffe7a0', '#85c58e', '#fff3d5'],
@@ -273,38 +211,26 @@ const palettes = {
   rose: ['#a44470', '#f579a9', '#ffc0d9', '#ffe5ad', '#e68fbd', '#fff2e2'],
 };
 const introPalette = ['#c6a266', '#e8bf76', '#ffe6aa', '#fff0c9', '#dbb679', '#fff9de'];
-// Arrange from back to front: horizontal offset, depth, size, paper.
-const giftPositions = [
-  [-.86, -.49, .46, 'cream'], [.91, -.46, .55, 'cream'],
-  [-.73, -.37, .51, 'pink'], [.82, -.32, .43, 'red'],
-  [-1.00, -.22, .60, 'red'], [.97, -.19, .58, 'pink'],
-  [-.87, -.05, .69, 'pink'], [-.69, -.04, .38, 'red'], [.75, .04, .74, 'cream'],
-  [-1.06, .07, .35, 'cream'], [1.04, .13, .61, 'cream'],
-  [-.55, .21, .83, 'cream'], [.46, .24, .74, 'red'],
-  [-.78, .29, .87, 'red'], [-.21, .31, .62, 'red'], [.82, .34, .77, 'pink'],
-  [1.06, .45, .50, 'red'], [-.47, .47, .55, 'pink'], [.23, .53, .98, 'cream'],
-  [-.66, .61, .56, 'cream'], [-.31, .68, .53, 'red'], [.58, .70, .50, 'cream'],
-  [.83, .75, .49, 'pink'], [-.07, .81, .48, 'cream'], [.40, .84, .42, 'red'],
-];
-const giftAnchors = [];
-const stageGifts = giftPositions.map(([, , , tone], index) => {
+const giftModels = Array.from({ length: 25 }, (_, index) => {
+  const angle = index * 2.39996;
+  const distance = 1.56 + (index * 7 % 11) * .053;
+  return {
+    x: Math.cos(angle) * distance, z: Math.sin(angle) * distance,
+    size: .22 + (index * 13 % 19) * .014, angle: angle * .63,
+    paper: index * 7 % 5, lid: 0,
+  };
+});
+const stageGifts = giftModels.map((_, index) => {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'stage-gift';
-  button.dataset.tone = tone;
   button.setAttribute('aria-label', '打开树下第 ' + (index + 1) + ' 个礼盒');
   button.setAttribute('aria-haspopup', 'dialog');
-  for (const part of ['gift-face gift-front', 'gift-face gift-side', 'gift-face gift-lid']) {
-    const decoration = document.createElement('span');
-    decoration.className = part;
-    decoration.setAttribute('aria-hidden', 'true');
-    button.append(decoration);
-  }
   giftStage.append(button);
   return button;
 });
 const effects = { scattered: false, density: 3000, palette: 'pine', color: '#8fe8af', shape: 'glow', gift: 'classic', energy: 0, scenery: 'forest', orbit: 0 };
-let width, height, center, top, tall, ground, radius, mobile;
+let width, height, center, ground, radius, worldScale, mobile;
 let spread = 0;
 const random = (max = 1) => Math.random() * max;
 const mix = (a, b, t) => a + (b - a) * t;
@@ -313,48 +239,49 @@ function smoothProgress(value) {
   return t * t * (3 - 2 * t);
 }
 const particles = Array.from({ length: maxParticles }, (_, i) => {
-  const y = Math.pow(random(), .83);
+  const level = random() ** .79;
   const angle = random(tau);
-  const branch = 0.73 + 0.27 * ((y * 6.4) % 1);
-  const radius = Math.pow(y, .91) * branch * (0.17 + .83 * Math.sqrt(random()));
+  const distance = treeRadius * level ** .88 * (.55 + random(.47));
   return {
-    y, x: Math.cos(angle) * radius, z: Math.sin(angle) * radius,
-    sx: random(1.92) - .96, sy: random(.82) - .40, sz: random(1.84) - .92,
-    size: .35 + random(1.25) + (i % 57 === 0 ? 1.4 : 0),
-    phase: random(tau), color: Math.floor(random(6)), light: i % 49 === 0, index: i,
+    level, x: Math.cos(angle) * distance, z: Math.sin(angle) * distance,
+    angle: random(tau), galaxy: .45 + random(1.95), height: random(4),
+    size: .35 + random(1.15), phase: random(tau), color: Math.floor(random(6)), light: i % 58 === 0,
   };
 });
-const particlesByColor = Array.from({ length: 6 }, (_, color) => particles.filter(p => p.color === color));
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
 const snow = Array.from({length: 82}, () => [random(), random(), random(1.7) + .3, random()]);
-const galaxyLights = Array.from({length: 76}, () => [random(tau), .26 + random(.73), random(), random()]);
 const winterThemes = {
   forest: [['#06132d','#203f73','#122848'], ['#1c3864','#09152d'], '#101c36', '#fff0c9'],
   cabin: [['#110e27','#563b61','#2e294a'], ['#314264','#11182e'], '#20233e', '#ffe4ae'],
   aurora: [['#060e28','#163f57','#212e55'], ['#1e3d62','#0b1933'], '#111c38', '#e1eee7'],
   dawn: [['#222648','#b47788','#696d9a'], ['#4b5d87','#142840'], '#374361', '#fff0c6'],
 };
-const garland = Array.from({length: 180}, (_, i) => {
-  const y = i / 179;
-  const angle = y * tau * 6.55;
-  const r = Math.pow(y, .95);
-  return { y, x: Math.cos(angle) * r, z: Math.sin(angle) * r };
-});
-const ornaments = [
-  [.21, .08, '#fbbf76'], [.35, 2.19, '#f08483'], [.43, 4.48, '#ffdf9b'],
-  [.52, .77, '#ffe8ac'], [.60, 3.28, '#f2a7a0'], [.67, 5.31, '#ffcf83'],
-  [.71, 1.28, '#ef897e'], [.80, 2.63, '#ffd581'], [.86, 4.17, '#ed9993'],
-  [.90, .53, '#ffe5a2'], [.95, 5.74, '#ec8f7d'],
-];
 const backdrop = document.createElement('canvas');
 const backdropCtx = backdrop.getContext('2d', { alpha: false });
 let introFinished = false;
 let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
 let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
-let backdropTheme, memoryNodes = [], orbitAngle = 0, giftsInFlight = false;
+let backdropTheme, memoryNodes = [], orbitAngle = 0, autoAngle = 0;
+const frameArt = new WeakMap();
 
 function setMemoryNodes(nodes) {
   memoryNodes = nodes;
+  for (const node of nodes) {
+    const image = node.querySelector('img');
+    if (image) {
+      frameArt.set(node, image);
+    } else {
+      const texture = document.createElement('canvas');
+      texture.width = texture.height = 96;
+      const paint = texture.getContext('2d');
+      paint.font = '61px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+      paint.textAlign = 'center';
+      paint.textBaseline = 'middle';
+      paint.fillStyle = '#503445';
+      paint.fillText(node.textContent, 48, 52, 87);
+      frameArt.set(node, texture);
+    }
+  }
   invalidateScene();
 }
 
@@ -374,24 +301,9 @@ function resize() {
     samples = averageCost = averageStep = 0;
   }
   center = width * (mobile ? .51 : .535);
-  top = height * (mobile ? .27 : .16);
-  tall = height * (mobile ? .49 : .62);
-  ground = top + tall;
-  radius = Math.min(width * .40, tall * .64);
-  const boxScale = Math.max(32, Math.min(70, radius * .238));
-  const pileRadius = Math.min(radius * .95, (Math.min(center, width - center) - boxScale * .40) / 1.06);
-  const floor = ground + (mobile ? 5 : 12);
-  for (const [index, [x, depth, scale]] of giftPositions.entries()) {
-    const button = stageGifts[index];
-    const size = boxScale * scale;
-    const left = center + x * pileRadius;
-    const foot = floor + depth * boxScale;
-    button.style.width = size + 'px';
-    button.style.left = left - size / 2 + 'px';
-    button.style.top = foot - size * .91 + 'px';
-    button.style.setProperty('--gift-angle', ((index * 59) % 17 - 8) + 'deg');
-    giftAnchors[index] = [left, foot - size * .41];
-  }
+  ground = height * (mobile ? .74 : .765);
+  worldScale = Math.min(height * (mobile ? .45 : .55) / treeHeight, width / 5.6);
+  radius = worldScale * 2.3;
   drawBackdrop();
   invalidateScene();
 }
@@ -413,13 +325,6 @@ function drawBackdrop() {
   backdropCtx.globalAlpha = .73;
   backdropCtx.fillStyle = floor;
   backdropCtx.fillRect(0, 0, width, height);
-  for (let ring = 0; ring < 6; ring++) {
-    backdropCtx.globalAlpha = .15 - ring * .023;
-    backdropCtx.strokeStyle = ring % 2 ? '#9bc2fa' : '#d3c18f';
-    backdropCtx.beginPath();
-    backdropCtx.ellipse(center, ground + 11, radius * (.68 + ring * .12), 12 + ring * 6, 0, 0, tau);
-    backdropCtx.stroke();
-  }
   backdropCtx.globalAlpha = 1;
 }
 
@@ -588,288 +493,458 @@ function makeHalo(color) {
   return sprite;
 }
 const warmHalo = makeHalo('#ffe9a0');
-function drawHalo(x, y, size, alpha) {
-  ctx.globalAlpha = alpha;
-  ctx.drawImage(warmHalo, x - size, y - size, 2 * size, 2 * size);
+
+const worldItems = [];
+let cameraCos = 1, cameraSin = 0, galaxyWidth = 1;
+const giftPapers = {
+  classic: ['#ba203b', '#ef93a8', '#ead7b4', '#ffedce', '#dc3650'],
+  ice: ['#406ba7', '#8bbddd', '#e9eef1', '#cadce9', '#5d91b8'],
+  pink: ['#b8406b', '#ef91aa', '#f4c2c6', '#ffead6', '#ce5d82'],
+};
+
+function project(x, y, z) {
+  const cameraX = x * cameraCos - z * cameraSin;
+  const cameraZ = z * cameraCos + x * cameraSin;
+  const depth = cameraZ * tiltCos + y * tiltSin;
+  const scale = worldScale * cameraDistance / (cameraDistance - depth);
+  return { x: center + cameraX * scale, y: ground + (cameraZ * tiltSin - y * tiltCos) * scale, depth, scale };
 }
 
-function drawOpeningSpiral(t, rotation) {
-  const progress = Math.min(1, t / spiralTime);
-  const head = progress * (1.22 - .22 * progress);
-  const fade = 1 - smoothProgress((t - spiralTime) / .62);
-  if (fade === 0) return;
+function polygon(points) {
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+  ctx.closePath();
+}
 
-  drawHalo(center, ground - tall * .29, tall * .88, fade * .13);
-  ctx.globalCompositeOperation = 'lighter';
-  for (let strand = 0; strand < 2; strand++) {
-    ctx.beginPath();
-    const points = Math.max(2, Math.ceil(head * 145));
-    const offset = strand ? .22 : 0;
-    for (let i = 0; i <= points; i++) {
-      const height = (i / points) * head;
-      const distance = Math.pow(1 - height, .91) * radius * (strand ? 1.045 : 1.0);
-      const angle = (1 - height) * tau * 6.55 - rotation + offset;
-      const x = center + Math.cos(angle) * distance;
-      const y = ground - height * tall + Math.sin(angle) * distance * .235;
-      if (i) ctx.lineTo(x, y);
-      else ctx.moveTo(x, y);
-    }
-    ctx.globalAlpha = fade * (strand ? .17 : .41);
-    ctx.strokeStyle = strand ? '#d69849' : '#ffe5a0';
-    ctx.lineWidth = strand ? 3.1 : 1.1;
-    ctx.stroke();
+function frontFacing(points) {
+  const [a, b, c] = points;
+  return (b.x - a.x) * (c.y - a.y) > (b.y - a.y) * (c.x - a.x);
+}
+
+function face(points, color, opacity = 1, edge) {
+  if (frontFacing(points)) queueFace(points, color, opacity, edge);
+}
+
+function queueFace(points, color, opacity = 1, edge) {
+  const depth = points.reduce((sum, p) => sum + p.depth, 0) / points.length;
+  worldItems.push({ depth, points, color, opacity, edge });
+}
+
+function queueLight(point, color, size, opacity, bloom = false, shape = 'glow') {
+  worldItems.push({ depth: point.depth, point, color, size, opacity, bloom, shape });
+}
+
+function drawPlatform() {
+  const rim = [];
+  const lip = [];
+  for (let i = 0; i < 72; i++) {
+    const angle = i / 72 * tau;
+    const x = Math.cos(angle) * 2.30;
+    const z = Math.sin(angle) * 2.30;
+    rim.push(project(x, -.035, z));
+    lip.push(project(x, -.15, z));
   }
-  const headRadius = Math.pow(1 - head, .91) * radius;
-  const angle = (1 - head) * tau * 6.55 - rotation;
-  const x = center + Math.cos(angle) * headRadius;
-  const y = ground - head * tall + Math.sin(angle) * headRadius * .235;
-  drawHalo(x, y, 24, fade * .68);
-  ctx.fillStyle = '#fff4cf';
-  ctx.globalAlpha = fade;
-  drawSpark(x, y, 3.5, .20);
-  ctx.globalCompositeOperation = 'source-over';
+  const gradient = ctx.createLinearGradient(0, ground - worldScale * .47, 0, ground + worldScale * .58);
+  gradient.addColorStop(0, '#243854');
+  gradient.addColorStop(.64, '#233557');
+  gradient.addColorStop(1, '#152746');
+  ctx.globalAlpha = .89;
+  polygon(lip);
+  ctx.fillStyle = '#050d20';
+  ctx.fill();
+  polygon(rim);
+  ctx.fillStyle = gradient;
+  ctx.fill();
+  ctx.strokeStyle = '#7894b250';
+  ctx.lineWidth = .9;
+  ctx.stroke();
   ctx.globalAlpha = 1;
+}
+
+const foliage = Array.from({ length: 10 }, (_, tier) => {
+  const base = .10 + tier * .489;
+  const width = treeRadius * ((treeHeight - base) / treeHeight) ** .92;
+  const count = 22;
+  const ring = Array.from({ length: count }, (_, i) => {
+    const angle = i / count * tau + tier * .23;
+    const distance = width * (i % 2 ? .78 + random(.10) : .95 + random(.08));
+    return [Math.cos(angle) * distance, base + random(.10), Math.sin(angle) * distance];
+  });
+  return ring.map((point, i) => {
+    const next = ring[(i + 1) % count];
+    const crown = [0, Math.min(treeHeight, base + 1.27), 0];
+    const shade = '#' + [12 + i % 4 * 4, 36 + i % 4 * 6, 30 + i % 4 * 4].map(value => value.toString(16).padStart(2, '0')).join('');
+    return { vertices: [crown, point, next], shade };
+  });
+}).flat();
+const branchTips = foliage.map(({ vertices }) => vertices[1]);
+
+function addFoliage(t, forming) {
+  const opacity = (1 - spread) * (forming ? smoothProgress((t - .76) / 1.48) : 1);
+  if (opacity < .025) return;
+  for (const { vertices, shade } of foliage) {
+    face(vertices.map(point => project(...point)), shade, opacity * .93);
+  }
+  for (const [index, tip] of branchTips.entries()) {
+    const point = project(...tip);
+    const lantern = index % 9 === 0;
+    queueLight(point, lantern ? '#fff6dd' : '#dbcfa3', lantern ? 2.7 : 1.18, opacity * (lantern ? .87 : .58), lantern);
+  }
+}
+
+const ambientLights = Array.from({ length: 61 }, (_, i) => {
+  const level = .09 + i / 67;
+  const angle = i * 2.39996;
+  const distance = treeRadius * level ** .90 * 1.07;
+  return { x: Math.cos(angle) * distance, y: treeHeight * (1 - level), z: Math.sin(angle) * distance, phase: random(tau) };
+});
+const roseHalo = makeHalo('#ff829d');
+const iceHalo = makeHalo('#a8e1ff');
+const whiteHalo = makeHalo('#fffaf0');
+
+function addGarland(t, forming, energy) {
+  const count = 236;
+  const head = forming ? Math.min(1, t / 2.10) : 1;
+  let previous;
+  for (let i = 0; i <= Math.floor(count * head); i++) {
+    const progress = i / count;
+    const angle = -progress * tau * 7.3;
+    const distance = treeRadius * (1 - progress) ** .89 * 1.03;
+    const point = project(Math.cos(angle) * distance, .11 + progress * 5.04, Math.sin(angle) * distance);
+    if (previous) {
+      worldItems.push({ depth: (previous.depth + point.depth) / 2, segment: [previous, point], opacity: mix(.79, .16, spread) });
+    }
+    if (i % 4 === 0 && spread < .98) {
+      const flare = .7 + .30 * Math.sin(i * 2.31 + t * 2.5);
+      const nearHead = forming && head - progress < .045;
+      queueLight(point, '#fff2c1', (nearHead ? 3.4 : 1.3 + flare + energy) * point.scale / worldScale, 1 - spread, nearHead || i % 12 === 0);
+    }
+    previous = point;
+  }
+  if (forming && previous) queueLight(previous, '#fff6dd', 5.9, 1 - spread, true, 'star');
+  for (const [i, light] of ambientLights.entries()) {
+    const alpha = (1 - spread) * (forming ? smoothProgress((t - (light.y / treeHeight) * 1.62) / .40) : 1);
+    if (alpha < .025) continue;
+    const point = project(light.x, light.y, light.z);
+    const pulse = .79 + .21 * Math.sin(light.phase + t * 2.3);
+    queueLight(point, ['#ffb4c5', '#ffe2a0', '#fff6dd'][i % 3],
+      (2.8 + (i % 5) * .86 + energy * 2) * pulse * point.scale / worldScale, alpha * pulse, true, i % 7 === 0 ? 'star' : 'glow');
+  }
+}
+
+function addParticles(t, forming, energy) {
+  const palette = palettes[effects.palette] || [effects.color, effects.color, effects.color, '#ffe7a0', effects.color, '#fff3d5'];
+  const count = Math.min(effects.density, particleBudget);
+  const boost = Math.min(1.47, Math.sqrt(effects.density / count));
+  for (let i = 0; i < count; i++) {
+    const p = particles[i];
+    const sparkle = .70 + .29 * Math.sin(p.phase + t * 1.7);
+    const angle = p.angle + t * (.12 + .1 / p.galaxy);
+    let x = mix(p.x * (1 + energy * .12), Math.cos(angle) * p.galaxy * galaxyWidth, spread);
+    let z = mix(p.z * (1 + energy * .12), Math.sin(angle) * p.galaxy * galaxyWidth, spread);
+    let y = mix(treeHeight * (1 - p.level), p.height + Math.sin(t + p.phase) * .16, spread);
+    let opacity = sparkle;
+    if (forming) {
+      const travel = (t - (1 - p.level) * 1.26 - p.phase * .029) / 1.04;
+      if (travel < -.03) continue;
+      if (travel < 1) {
+        const rise = smoothProgress(travel);
+        const settle = smoothProgress((travel - .24) / .76);
+        const spiral = t * 8.9 + p.level * 13 + p.phase * .48;
+        const distance = mix(treeRadius * .94, Math.hypot(p.x, p.z), rise);
+        x = mix(Math.cos(spiral) * distance, x, settle);
+        z = mix(Math.sin(spiral) * distance, z, settle);
+        y = mix(.07, y, rise);
+        opacity *= smoothProgress((travel + .03) / .20);
+      }
+    }
+    const point = project(x, y, z);
+    if (point.x < -10 || point.x > width + 10 || point.y < -10 || point.y > height + 10) continue;
+    const light = p.light || spread > .5 && i % 31 === 0;
+    const colors = forming && t < 1.87 ? introPalette : palette;
+    const color = spread > .65 && i % 11 === 0 ? '#ff9cba' :
+      i % 3 === 0 && effects.palette === 'pine' ? '#fff6dd' : colors[p.color];
+    const size = (p.size * boost + spread * .31 + (light ? 1.6 : 0)) * (1 + energy * .45) * point.scale / worldScale;
+    queueLight(point, color, size, opacity * (light ? 1 : .82), light, effects.shape);
+  }
+}
+
+function addStar(t, forming) {
+  const glow = (forming ? smoothProgress((t - 1.82) / .53) : 1) * (1 - spread * .28);
+  if (glow <= 0) return;
+  const centerPoint = project(0, 5.40, 0);
+  const angle = Math.atan2(cameraSin, cameraCos) + Math.sin(t * .66) * .39;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const vertices = [-1, 1].map(side => Array.from({ length: 10 }, (_, i) => {
+    const turn = i / 10 * tau - Math.PI / 2;
+    const distance = (i % 2 ? .144 : .351) * (.72 + glow * .28);
+    const x = Math.cos(turn) * distance;
+    const z = side * .077;
+    return project(x * cos + z * sin, 5.40 - Math.sin(turn) * distance, -x * sin + z * cos);
+  }));
+  queueLight(centerPoint, '#fff0ad', 9.3 + effects.energy * 3, glow, true, 'star');
+  const front = vertices[1];
+  const back = vertices[0];
+  for (let i = 0; i < front.length; i++) {
+    const j = (i + 1) % front.length;
+    queueFace([back[i], back[j], front[j], front[i]], i % 2 ? '#c68646' : '#f4c571', glow);
+    queueFace([front[i], front[j], centerPoint], i % 2 ? '#fff5bb' : '#eac16e', glow);
+  }
+}
+
+function worldPose(x, y, z, yaw, pitch = 0, roll = 0) {
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const p = Math.cos(pitch), q = Math.sin(pitch);
+  const r = Math.cos(roll), k = Math.sin(roll);
+  return (u, v, w) => {
+    const localY = v * p - w * q;
+    const localZ = w * p + v * q;
+    const localX = u * r - localY * k;
+    return project(x + localX * c + localZ * s, y + localY * r + u * k, z + localZ * c - localX * s);
+  };
+}
+
+const cuboidFaces = [
+  [3, 2, 1, 0, 0, 0], [2, 6, 5, 1, 0, .41], [6, 7, 4, 5, 0, .29],
+  [7, 3, 0, 4, 0, .21], [7, 6, 2, 3, 1, 0], [0, 1, 5, 4, 0, .55],
+];
+
+function paintBox(pose, halfX, halfZ, base, top, paper, ribbons, opacity = 1) {
+  const corners = [
+    [-halfX, base, halfZ], [halfX, base, halfZ], [halfX, top, halfZ], [-halfX, top, halfZ],
+    [-halfX, base, -halfZ], [halfX, base, -halfZ], [halfX, top, -halfZ], [-halfX, top, -halfZ],
+  ].map(point => pose(...point));
+  for (const [a, b, c, d, lid, shade] of cuboidFaces) {
+    const points = [corners[a], corners[b], corners[c], corners[d]];
+    if (!frontFacing(points)) continue;
+    const depth = points.reduce((sum, p) => sum + p.depth, 0) / 4;
+    worldItems.push({ depth, points, color: paper, opacity, ribbons, lid, shade });
+  }
+  return corners;
+}
+
+function placeControl(button, points, clickable) {
+  const xs = points.map(point => point.x);
+  const ys = points.map(point => point.y);
+  const left = Math.min(...xs), top = Math.min(...ys);
+  const buttonWidth = Math.max(...xs) - left;
+  const buttonHeight = Math.max(...ys) - top;
+  button.style.transform = 'translate3d(' + left.toFixed(1) + 'px,' + top.toFixed(1) + 'px,0)';
+  button.style.width = buttonWidth.toFixed(1) + 'px';
+  button.style.height = buttonHeight.toFixed(1) + 'px';
+  const depth = points.reduce((sum, point) => sum + point.depth, 0) / points.length;
+  button.style.zIndex = String(Math.round((depth + 7) * 20));
+  button.hidden = !clickable || buttonWidth < 6 || buttonHeight < 6;
+}
+
+function addGifts(t, dt) {
+  if (giftStage.hidden) return;
+  const papers = giftPapers[effects.gift] || giftPapers.classic;
+  for (const [i, gift] of giftModels.entries()) {
+    const button = stageGifts[i];
+    gift.lid = mix(gift.lid, button.classList.contains('is-open') ? 1 : 0, 1 - Math.exp(-dt * 10));
+    const angle = gift.angle + t * .21;
+    const distance = (1.38 + i % 8 * .14) * galaxyWidth;
+    const x = mix(gift.x, Math.cos(angle) * distance, spread);
+    const z = mix(gift.z, Math.sin(angle) * distance, spread);
+    const y = (.55 + (i * 13 % 28) * .113 + Math.sin(t * 1.2 + i) * .15) * spread;
+    const yaw = gift.angle + spread * t * .41;
+    const pitch = Math.sin(angle) * spread * .83;
+    const roll = Math.cos(angle) * spread * 1.1;
+    const pose = worldPose(x, y, z, yaw, pitch, roll);
+    const size = gift.size * mix(1, .61, spread);
+    const halfX = size * (.47 + i % 3 * .07);
+    const halfZ = size * (.43 + i % 4 * .06);
+    const high = size * (.66 + i % 5 * .081);
+    const paper = papers[gift.paper];
+    const corners = paintBox(pose, halfX, halfZ, 0, high, paper, true);
+    const lift = gift.lid;
+    const lidPose = lift > .008 ? (u, v, w) => {
+      const turn = lift * 1.18;
+      const offset = w + halfZ;
+      return pose(u + lift * .04, high + v * Math.cos(turn) + offset * Math.sin(turn), -halfZ + offset * Math.cos(turn) - v * Math.sin(turn));
+    } : (u, v, w) => pose(u, high + v, w);
+    paintBox(lidPose, halfX * 1.06, halfZ * 1.06, -.025, high * .17, paper, true);
+    if (spread < .65) {
+      const foot = project(x, -.01, z);
+      ctx.globalAlpha = (1 - spread) * .49;
+      ctx.beginPath();
+      ctx.ellipse(foot.x + 1, foot.y + 1, (halfX + halfZ) * foot.scale * .78, high * foot.scale * .24, 0, 0, tau);
+      ctx.fillStyle = '#090b1c';
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    if (lift > .02) queueLight(pose(0, high, 0), '#ffe9aa', high * .16 * worldScale, lift, true, 'star');
+    const mid = pose(0, high / 2, 0);
+    const behindTree = mid.depth < -.42 && Math.abs(mid.x - center) < treeRadius * worldScale * .80;
+    placeControl(button, corners, !effects.scattered && !behindTree);
+  }
+}
+
+function addFrames(t, forming) {
+  const count = Math.max(7, memoryNodes.length - 1);
+  const opacity = forming ? smoothProgress((t - 1.14) / 1.13) : 1;
+  for (const [i, button] of memoryNodes.entries()) {
+    const level = .20 + i / count * .69;
+    const angle = i * 2.39996;
+    const orbit = angle + t * .19;
+    const distance = treeRadius * level ** .88 + .20;
+    const outer = (.86 + (i * 11 % 13) * .114) * galaxyWidth;
+    const x = mix(Math.sin(angle) * distance, Math.sin(orbit) * outer, spread);
+    const z = mix(Math.cos(angle) * distance, Math.cos(orbit) * outer, spread);
+    const y = mix(treeHeight * (1 - level), 1.05 + (i * 7 % 17) * .19 + Math.sin(t + i) * .15, spread);
+    const angleToCamera = Math.atan2(cameraSin, cameraCos);
+    const turn = angleToCamera + Math.sin(orbit) * .70 - angle;
+    const yaw = angle + spread * Math.atan2(Math.sin(turn), Math.cos(turn));
+    const pose = worldPose(x, y, z, yaw, -.08 + Math.sin(i * 1.2 + t * .5) * .10, Math.sin(i * 3.2) * .105);
+    const size = .237 + i % 3 * .014 + spread * .035;
+    const corners = paintBox(pose, size, .039, -size, size, '#ddbd90', false, opacity);
+    const front = [corners[3], corners[2], corners[1], corners[0]];
+    const visibleSide = frontFacing(front);
+    const centerPoint = pose(0, 0, .042);
+    if (visibleSide && opacity > .02) {
+      const art = size * .77;
+      const points = [pose(-art, art, .043), pose(art, art, .043), pose(art, -art, .043), pose(-art, -art, .043)];
+      worldItems.push({ depth: front.reduce((sum, p) => sum + p.depth, 0) / 4 + .006, points, artwork: button, opacity });
+    }
+    const behindTree = spread < .48 && centerPoint.depth < y * tiltSin - .27 &&
+      Math.abs(centerPoint.x - center) < distance * worldScale * .86;
+    placeControl(button, corners, opacity > .60 && !behindTree && visibleSide);
+  }
+}
+
+function strip(points, along, color) {
+  const [a, b, c, d] = points;
+  const interpolate = (p, q, t) => ({ x: mix(p.x, q.x, t), y: mix(p.y, q.y, t) });
+  const ribbon = along ? [interpolate(a, d, .42), interpolate(b, c, .42), interpolate(b, c, .58), interpolate(a, d, .58)] :
+    [interpolate(a, b, .42), interpolate(a, b, .58), interpolate(d, c, .58), interpolate(d, c, .42)];
+  polygon(ribbon);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function drawFrameArt(item) {
+  const [a, b, c, d] = item.points;
+  ctx.save();
+  polygon(item.points);
+  ctx.fillStyle = '#fff1e3';
+  ctx.fill();
+  ctx.strokeStyle = '#78533f';
+  ctx.lineWidth = .8;
+  ctx.stroke();
+  ctx.clip();
+  const sx = (b.x - a.x + c.x - d.x) / 2;
+  const sy = (b.y - a.y + c.y - d.y) / 2;
+  const tx = (d.x - a.x + c.x - b.x) / 2;
+  const ty = (d.y - a.y + c.y - b.y) / 2;
+  ctx.transform(sx, sy, tx, ty, (a.x + b.x + c.x + d.x - 2 * sx - 2 * tx) / 4, (a.y + b.y + c.y + d.y - 2 * sy - 2 * ty) / 4);
+  const image = frameArt.get(item.artwork);
+  if (image?.naturalWidth) {
+    const edge = Math.min(image.naturalWidth, image.naturalHeight);
+    ctx.drawImage(image, (image.naturalWidth - edge) / 2, (image.naturalHeight - edge) / 2, edge, edge, -.03, -.03, 1.06, 1.06);
+  } else if (image instanceof HTMLCanvasElement) {
+    ctx.drawImage(image, 0, 0, 1, 1);
+  }
+  ctx.restore();
+}
+
+function drawWorld() {
+  worldItems.sort((a, b) => a.depth - b.depth);
+  ctx.lineCap = 'round';
+  for (const item of worldItems) {
+    ctx.globalAlpha = item.opacity;
+    if (item.segment) {
+      const [a, b] = item.segment;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = '#ffe4a1';
+      ctx.lineWidth = Math.max(.67, worldScale * .012);
+      ctx.stroke();
+    } else if (item.point) {
+      const { x, y } = item.point;
+      const size = item.size;
+      if (item.bloom) {
+        const sprite = item.color === '#ffb4c5' || item.color === '#ff9cba' ? roseHalo :
+          item.color === '#c1f5ff' || item.color === '#f5fcff' ? iceHalo :
+          item.color === '#fff6dd' ? whiteHalo : warmHalo;
+        const radius = size * (size > 7 ? 5.2 : 4.2);
+        ctx.globalAlpha = item.opacity * .78;
+        ctx.drawImage(sprite, x - radius, y - radius, 2 * radius, 2 * radius);
+        ctx.globalAlpha = item.opacity;
+      }
+      ctx.fillStyle = item.color;
+      if (item.shape === 'star' || item.shape === 'diamond') {
+        starPath(x, y, size * 1.44, 4, item.shape === 'star' ? .22 : .015);
+        ctx.fill();
+      } else if (size > 2) {
+        ctx.beginPath();
+        ctx.arc(x, y, size * .62, 0, tau);
+        ctx.fill();
+      } else {
+        ctx.fillRect(x - size / 2, y - size / 2, size, size);
+      }
+    } else if (item.artwork) {
+      drawFrameArt(item);
+    } else {
+      polygon(item.points);
+      ctx.fillStyle = item.color;
+      ctx.fill();
+      if (item.ribbons) {
+        strip(item.points, false, item.lid ? '#ffeec7' : '#e8c782');
+        if (item.lid) strip(item.points, true, '#fff2d1');
+      }
+      if (item.shade) {
+        polygon(item.points);
+        ctx.fillStyle = 'rgba(13,16,42,' + item.shade + ')';
+        ctx.fill();
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  worldItems.length = 0;
 }
 
 function drawScene(t, dt) {
-  if (t >= formationTime || effects.scattered) introFinished = true;
+  if (t >= formationTime || effects.scattered || reducedSceneMotion.matches) introFinished = true;
   const forming = !introFinished;
   const status = forming ? '星光汇聚中' : effects.scattered ? '粒子已散开' : '粒子已汇聚';
   if (stageStatus.textContent !== status) stageStatus.textContent = status;
-  spread = mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.4));
-  const energy = effects.energy;
-  orbitAngle = mix(orbitAngle, effects.orbit, 1 - Math.exp(-dt * 6));
+  spread = mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.1));
+  orbitAngle = mix(orbitAngle, effects.orbit, 1 - Math.exp(-dt * 7));
+  if (!albumDialog.open && !reducedSceneMotion.matches && !document.activeElement?.matches('.stage-gift, .memory-token')) {
+    autoAngle = (autoAngle + dt * mix(.23, .10, spread)) % tau;
+  }
+  const angle = autoAngle + orbitAngle;
+  cameraCos = Math.cos(angle);
+  cameraSin = Math.sin(angle);
+  galaxyWidth = Math.max(1, Math.min(2.8, width / (worldScale * 5.5)));
   if (backdropTheme !== effects.scenery) drawBackdrop();
-  const palette = palettes[effects.palette] || [effects.color, effects.color, effects.color, '#ffe7a0', effects.color, '#fff3d5'];
   ctx.drawImage(backdrop, 0, 0, width, height);
-  const rotation = t * .76;
-  const cos = Math.cos(rotation);
-  const sin = Math.sin(rotation);
-  const freeAngle = t * .19 + orbitAngle;
-  const freeCos = Math.cos(freeAngle);
-  const freeSin = Math.sin(freeAngle);
-  const count = Math.min(effects.density, particleBudget);
-  const sizeBoost = Math.min(1.48, Math.sqrt(effects.density / count));
-  const shape = effects.shape;
-  const goldRelease = forming ? smoothProgress((t - 1.51) / .77) : 1;
-  drawTreeSilhouette((1 - spread) * (forming ? smoothProgress((t - .70) / 1.1) : 1));
-  for (const [color, group] of particlesByColor.entries()) {
-    ctx.fillStyle = palette[color];
-    for (const p of group) {
-      if (p.index >= count) break;
-      // Lower rows take flight first, with an orbit that tightens as each row settles.
-      const travel = forming ? (t - (1 - p.y) * launchStagger + .11 - p.phase * .021) / .69 : 1;
-      if (travel < -.18) continue;
-      const spin = p.x * cos + p.z * sin;
-      const depth = p.z * cos - p.x * sin;
-      const wave = Math.sin(t * 1.55 + p.phase);
-      const freeX = (p.sx * freeCos + p.sz * freeSin) * width * .45;
-      const freeDepth = p.sz * freeCos - p.sx * freeSin;
-      let x = center + mix(spin * radius * (1 + energy * .31), freeX + wave * 15, spread);
-      let y = mix(top + p.y * tall + depth * tall * .135 + wave * energy * 10, height * .55 + p.sy * height * .66 + freeDepth * height * .09 + wave * 15, spread);
-      let s = p.size * (1 + energy * .57 + depth * .38) * sizeBoost + .40 * spread;
-      let alpha = Math.max(.13, Math.min(1, .62 + .22 * wave + .34 * depth + energy * .25));
-      if (travel < 1) {
-        const progress = Math.max(0, travel);
-        const rise = progress * (2 - progress);
-        const landing = smoothProgress((progress - .30) / .70);
-        const orbit = (t * 7.7 + p.y * tau * 2.25 + p.phase * .73);
-        const ring = radius * mix(.87, .20 + p.y * .54, rise) * (.80 + p.phase * .057);
-        x = mix(center + Math.cos(orbit) * ring, x, landing);
-        y = mix(ground + 12 - (1 - p.y) * tall * rise + Math.sin(orbit) * ring * .24, y, landing);
-        s *= mix(1.42, 1, landing);
-        alpha = mix(.86, alpha, landing) * smoothProgress((travel + .18) / .26);
-      }
-      if (forming) ctx.fillStyle = p.index % 17 / 17 < goldRelease ? palette[color] : introPalette[color];
-      ctx.globalAlpha = alpha;
-      if (shape === 'star' || p.light && shape === 'glow') {
-        drawSpark(x, y, s * (p.light ? 2.1 : 1.41), .24);
-      } else if (shape === 'diamond') {
-        drawSpark(x, y, s * 1.30, 0);
-      } else {
-        ctx.fillRect(x, y, s, s);
-      }
-    }
-  }
-  if (spread > .025) drawGalaxy(t, freeAngle, energy);
-  if (spread < .99) {
-    // The garland and prominent ornaments turn with the tree's particle cloud.
-    ctx.fillStyle = '#ffe6a0';
-    for (const [index, point] of garland.entries()) {
-      const depth = point.z * cos - point.x * sin;
-      const x = center + (point.x * cos + point.z * sin) * radius * (1 + energy * .31);
-      const y = top + point.y * tall + depth * tall * .138;
-      const s = 1.3 + Math.max(0, depth) * 3.1 + energy * 1.4;
-      const lit = forming ? smoothProgress((t - (1 - point.y) * spiralTime - .14) / .40) : 1;
-      const flicker = .81 + .19 * Math.sin(t * 2.25 + index * .71);
-      const light = lit * (1 - spread) * (.76 + depth * .24) * flicker;
-      if (index % 5 === 0 && light > .03) drawHalo(x, y, (5 + s * 5) * (index % 10 ? .85 : 1.22), light * .69);
-      ctx.globalAlpha = light;
-      ctx.fillStyle = index % 8 === 0 ? '#ffc4b2' : '#fff0bc';
-      ctx.fillRect(x - s * .58, y - s * .58, s * 1.16, s * 1.16);
-    }
-    for (const [y, angle, color] of ornaments) {
-      const depth = Math.sin(angle - rotation);
-      const x = center + Math.cos(angle - rotation) * y * radius * .94 * (1 + energy * .31);
-      const py = top + y * tall + depth * y * tall * .135;
-      const size = 2.1 + Math.max(0, depth) * 4 + energy * 2;
-      const lit = forming ? smoothProgress((t - (1 - y) * spiralTime - .17) / .43) : 1;
-      if (lit === 0) continue;
-      const alpha = lit * (1 - spread) * (.50 + .43 * depth);
-      drawHalo(x, py, size * 3.4, alpha * .7);
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      drawSpark(x, py, size, .25);
-    }
-    if (forming) drawOpeningSpiral(t, rotation);
-  }
-  {
-    const starLight = (1 - .30 * spread) * (forming ? smoothProgress((t - 1.38) / .48) : 1);
-    if (starLight > 0) {
-      const size = (Math.min(34, Math.max(20, width * .037)) + energy * 8) * mix(.56, 1, starLight);
-      drawHalo(center, top - 7, size * 3.5, starLight * .66);
-      ctx.globalAlpha = starLight;
-      ctx.fillStyle = '#fff8d2';
-      starPath(center, top - 7, size, 5, .43);
-      ctx.fill();
-      ctx.fillStyle = '#eac578';
-      starPath(center, top - 7, size * .67, 5, .28);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-  ctx.fillStyle = '#d8e5d7';
+  drawPlatform();
+  addFoliage(t, forming);
+  addParticles(t, forming, effects.energy);
+  addGarland(t, forming, effects.energy);
+  addGifts(t, dt);
+  addFrames(t, forming);
+  addStar(t, forming);
+  drawWorld();
+  ctx.fillStyle = '#eef3f5';
   for (const [x, y, size, speed] of snow) {
-    ctx.globalAlpha = .25 + speed * .42;
+    ctx.globalAlpha = .16 + speed * .46;
     const sx = (x * width + Math.sin(t * .25 + y * 20) * 19 + width) % width;
-    const sy = (y * height + t * (7 + speed * 18)) % height;
+    const sy = (y * height + t * (8 + speed * 19)) % height;
     ctx.fillRect(sx, sy, size, size);
   }
   ctx.globalAlpha = 1;
-  layoutGifts(t, freeAngle);
-  layoutMemories(t, rotation, freeAngle, forming);
-}
-
-function drawTreeSilhouette(opacity) {
-  if (opacity < .015) return;
-  ctx.globalAlpha = opacity * .67;
-  const foliage = ctx.createLinearGradient(center - radius, 0, center + radius, 0);
-  foliage.addColorStop(0, '#192b37');
-  foliage.addColorStop(.47, '#304b43');
-  foliage.addColorStop(1, '#0a2027');
-  ctx.fillStyle = foliage;
-  for (let tier = 6; tier >= 0; tier--) {
-    const level = (tier + 1) / 7;
-    const edge = radius * (.15 + .68 * level);
-    const y = top + level * tall - 2;
-    const tip = y - tall * (.23 + level * .04);
-    ctx.beginPath();
-    ctx.moveTo(center, Math.max(top, tip));
-    ctx.lineTo(center + edge * .84, y - 10);
-    ctx.lineTo(center + edge, y);
-    ctx.quadraticCurveTo(center + edge * .29, y + level * 21, center - edge, y);
-    ctx.lineTo(center - edge * .84, y - 10);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawGalaxy(t, angle, energy) {
-  const colors = ['#f6cb78','#ff91af','#a6d7ff','#fff5d1'];
-  for (let i = 0; i < galaxyLights.length; i++) {
-    const [phase, distance, level, speed] = galaxyLights[i];
-    const turn = phase + angle * (.60 + distance * .30);
-    const depth = (1 + Math.sin(turn)) * .5;
-    const x = center + Math.cos(turn) * distance * width * .46;
-    const y = height * (.54 + (level - .5) * .41) + (depth - .5) * height * .22;
-    const flicker = .60 + Math.sin(t * (1.5 + speed * 2) + phase) * .28;
-    const size = (1.35 + depth * 3.3 + energy * 2.1) * flicker;
-    if (i % 3 === 0) drawHalo(x, y, size * 4.6, spread * .62);
-    ctx.globalAlpha = spread * (.60 + depth * .39) * flicker;
-    ctx.fillStyle = colors[i % colors.length];
-    if (i % 4 === 0) drawSpark(x, y, size, .27);
-    else {
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, tau);
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-function layoutGifts(t, freeAngle) {
-  if (giftStage.hidden) return;
-  if (spread < .005 && !effects.scattered) {
-    if (giftsInFlight) {
-      for (const box of stageGifts) box.style.removeProperty('transform');
-      giftsInFlight = false;
-    }
-    return;
-  }
-  giftsInFlight = true;
-  for (const [i, box] of stageGifts.entries()) {
-    const [baseX, baseY] = giftAnchors[i];
-    const angle = i * 2.40 + freeAngle * .94;
-    const depth = Math.sin(angle);
-    const distance = .36 + ((i * .317) % .60);
-    const x = width * (.50 + Math.cos(angle) * .47 * distance);
-    const y = height * (.49 + ((i * .217) % .39) - .20 + depth * .15);
-    const dx = (x - baseX) * spread;
-    const dy = (y - baseY) * spread - Math.sin(spread * Math.PI) * 24;
-    const turn = Math.sin(t * .78 + i * 1.09) * spread * 67;
-    box.style.transform = 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) +
-      'px,0) rotate(' + turn.toFixed(1) + 'deg) scale(' + mix(1, .64 + depth * .19, spread).toFixed(3) + ')';
-  }
-}
-
-function layoutMemories(t, rotation, freeAngle, forming) {
-  const opacity = forming ? smoothProgress((t - 1.28) / .75) : 1;
-  const levelCount = Math.max(8, memoryNodes.length - 1);
-  for (const [i, card] of memoryNodes.entries()) {
-    const level = .23 + i / levelCount * .65;
-    const turn = i * 2.40 - rotation;
-    const treeDepth = Math.sin(turn);
-    const treeX = center + Math.cos(turn) * radius * Math.pow(level, .90) * .90;
-    const treeY = top + level * tall + treeDepth * radius * .16 * level;
-    const floatTurn = i * 2.40 + freeAngle * .93;
-    const floatDepth = Math.sin(floatTurn);
-    const floatDistance = .29 + ((i * .601) % .64);
-    const floatX = width * .5 + Math.cos(floatTurn) * width * .46 * floatDistance;
-    const floatY = height * (.49 + (level - .44) * .50 + floatDepth * .15);
-    const x = mix(treeX, floatX, spread);
-    const y = mix(treeY, floatY, spread);
-    const depth = mix(treeDepth, floatDepth, spread);
-    const scale = .82 + .22 * depth + .30 * spread;
-    card.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) +
-      'px,0) translate(-50%,-50%) rotate(' + (depth * (7 + 10 * spread)).toFixed(1) +
-      'deg) scale(' + scale.toFixed(3) + ')';
-    const treeLight = .30 + .70 * smoothProgress((treeDepth + .82) / 1.28);
-    card.style.opacity = String(opacity * mix(treeLight, .72 + .28 * Math.max(0, floatDepth), spread));
-    card.style.zIndex = String(Math.round(12 + depth * 10));
-  }
 }
 
 function syncGiftControl() {
   giftStage.hidden = effects.gift === 'none';
   giftStage.inert = effects.scattered;
-  giftStage.dataset.style = effects.gift;
 }
-
-function drawSpark(x, y, size, inner) {
-  const inset = inner * size;
-  ctx.beginPath();
-  ctx.moveTo(x, y - size);
-  if (inner) ctx.lineTo(x + inset, y - inset);
-  ctx.lineTo(x + size, y);
-  if (inner) ctx.lineTo(x + inset, y + inset);
-  ctx.lineTo(x, y + size);
-  if (inner) ctx.lineTo(x - inset, y + inset);
-  ctx.lineTo(x - size, y);
-  if (inner) ctx.lineTo(x - inset, y - inset);
-  ctx.fill();
-}
-
 function render(now) {
   frame = 0;
   const targetStep = mobile ? 1000 / 30 : 1000 / 60;
@@ -1644,6 +1719,7 @@ function openNearestMemory() {
   const cards = [...$('#floating-memories').children];
   let closest, distance = Infinity;
   for (const card of cards) {
+    if (card.hidden) continue;
     const box = card.getBoundingClientRect();
     const offset = Math.hypot(box.left + box.width / 2 - targetX, box.top + box.height / 2 - targetY);
     if (offset < distance) {
@@ -1658,7 +1734,7 @@ function openNearestMemory() {
 const roomCanvas = $('#scene');
 let drag;
 roomCanvas.addEventListener('pointerdown', event => {
-  if (!effects.scattered || event.button !== 0) return;
+  if (event.button !== 0) return;
   drag = { id: event.pointerId, x: event.clientX };
   roomCanvas.setPointerCapture(event.pointerId);
 });
