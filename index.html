@@ -247,10 +247,10 @@ const particles = Array.from({ length: maxParticles }, (_, i) => {
 });
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
 const snow = Array.from({length: 96}, () => [random(), random(), random(1.7) + .3, random()]);
-const sceneSweepFlakes = Array.from({ length: 28 }, (_, index) => ({
-  delay: random(.31),
-  height: .08 + random(.76),
-  size: index % 7 === 0 ? 3.6 + random(2.7) : .9 + random(2.1),
+const sceneSweepFlakes = Array.from({ length: 56 }, (_, index) => ({
+  delay: random(.38),
+  height: .04 + (index * .618 % 1) * .74 + random(.05),
+  size: index % 7 === 0 ? 5.4 + random(3.3) : 1.25 + random(2.85),
   drift: random(1),
 }));
 let nextSleighAt = 7 + random(7);
@@ -370,19 +370,18 @@ function drawSceneSnowSweep(t) {
     sceneSweepStart = null;
     return;
   }
-  const envelope = smoothProgress(progress / .20) * smoothProgress((1 - progress) / .32);
-  ctx.fillStyle = '#f4f8ff';
+  const envelope = smoothProgress(progress / .15) * smoothProgress((1 - progress) / .27);
+  ctx.fillStyle = '#f6faff';
   for (const [index, flake] of sceneSweepFlakes.entries()) {
     if (mobile && index % 3 === 1) continue;
     const fly = (progress - flake.delay * .54) / (.69 + flake.delay * .40);
     const x = width * (1.04 - fly * 1.14);
     const y = height * (flake.height + fly * (.15 + flake.drift * .15)) + Math.sin(fly * 8 + index) * 6;
     if (x < -12 || x > width + 12 || y > height + 12) continue;
-    const size = flake.size * (mobile ? .76 : 1);
-    ctx.globalAlpha = envelope * (.23 + flake.drift * .38);
+    const size = flake.size * (mobile ? .82 : 1);
+    ctx.globalAlpha = envelope * (.36 + flake.drift * .43);
     if (index % 7 === 0) {
-      starPath(x, y, size, 6, .30);
-      ctx.fill();
+      drawSweepSnowflake(x, y, size, index + fly * 1.15);
     } else if (index % 3 === 0) {
       ctx.drawImage(iceHalo, x - size * 3.5, y - size * 2, size * 7, size * 4);
     } else {
@@ -392,6 +391,23 @@ function drawSceneSnowSweep(t) {
     }
   }
   ctx.globalAlpha = 1;
+}
+
+function drawSweepSnowflake(x, y, size, rotation) {
+  ctx.beginPath();
+  for (let arm = 0; arm < 6; arm++) {
+    const angle = rotation + arm * tau / 6;
+    const dx = Math.cos(angle) * size;
+    const dy = Math.sin(angle) * size;
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx, y + dy);
+    ctx.moveTo(x + dx * .65 - dy * .22, y + dy * .65 + dx * .22);
+    ctx.lineTo(x + dx * .53, y + dy * .53);
+    ctx.lineTo(x + dx * .65 + dy * .22, y + dy * .65 - dx * .22);
+  }
+  ctx.lineWidth = size * .14;
+  ctx.strokeStyle = '#eaf4ff';
+  ctx.stroke();
 }
 
 function softPatch(paint, x, y, wide, high, color, opacity, angle = 0) {
