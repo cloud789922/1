@@ -244,6 +244,8 @@ const particles = Array.from({ length: maxParticles }, (_, i) => {
 });
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
 const snow = Array.from({length: 96}, () => [random(), random(), random(1.7) + .3, random()]);
+let nextSleighAt = 7 + random(7);
+let sleighFlight;
 const winterThemes = {
   forest: [['#050c23','#2a4c80','#1d3763'], ['#1b315b','#101c3c'], '#122347', '#f3f3df'],
   cabin: [['#110e27','#563b61','#2e294a'], ['#314264','#11182e'], '#20233e', '#ffe4ae'],
@@ -448,6 +450,126 @@ function drawWinterMoon(paint, moonColor, dawn) {
   softPatch(paint, x + radius * .27, y - radius * .09, radius * .58, radius * .29, '#9ca9bd', .23, -.45);
   softPatch(paint, x - radius * .19, y + radius * .30, radius * .37, radius * .49, '#9ca9bd', .19, -.30);
   paint.restore();
+}
+
+function drawSleighFlight(t) {
+  if (reducedSceneMotion.matches) return;
+  if (sleighFlight && t >= sleighFlight.end) {
+    sleighFlight = null;
+    nextSleighAt = t + 19 + random(30);
+  }
+  if (!sleighFlight) {
+    if (t < nextSleighAt) return;
+    sleighFlight = {
+      start: t, end: t + 5.2 + random(1.9),
+      direction: random() < .5 ? 1 : -1,
+      altitude: .235 + random(.092),
+    };
+  }
+
+  const { start, end, direction, altitude } = sleighFlight;
+  const progress = (t - start) / (end - start);
+  const opacity = smoothProgress(progress * 9) * smoothProgress((1 - progress) * 9);
+  const size = Math.min(100, Math.max(41, width * .083));
+  const x = mix(-size * .55, width + size * .55, direction > 0 ? progress : 1 - progress);
+  const y = height * (altitude - Math.sin(progress * Math.PI) * .034);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(direction * size / 100, size / 100);
+  ctx.rotate(-.09 + Math.cos(progress * Math.PI) * .09);
+  ctx.fillStyle = '#e1c9a3';
+  for (let i = 0; i < 5; i++) {
+    const flicker = .66 + Math.sin(t * 6 + i * 3.4) * .34;
+    ctx.globalAlpha = opacity * (.22 - i * .034) * flicker;
+    ctx.beginPath();
+    ctx.arc(-46 - i * 3.8, Math.sin(t * 3 + i) * 1.3 + i * .26, Math.max(.4, 1.02 - i * .13), 0, tau);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = opacity * .73;
+  ctx.fillStyle = effects.scenery === 'dawn' ? '#392c45' : '#0d1528';
+  ctx.strokeStyle = effects.scenery === 'dawn' ? '#392c45' : '#0d1528';
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = .65;
+  ctx.beginPath();
+  ctx.moveTo(-42, -3);
+  ctx.quadraticCurveTo(-25, 2, 38, -7);
+  ctx.stroke();
+  for (let deer = 0; deer < 3; deer++) {
+    ctx.save();
+    ctx.translate(-7 + deer * 20, -2.5 - deer * 1.35 + Math.sin(t * 9 + deer * .62) * .58);
+    drawFlyingDeer(t * 9 + deer * 1.9);
+    ctx.restore();
+  }
+  drawSleighBody(opacity);
+  ctx.restore();
+}
+
+function drawFlyingDeer(stride) {
+  ctx.beginPath();
+  ctx.moveTo(-7.4, -1.1);
+  ctx.lineTo(-5.1, 0);
+  ctx.bezierCurveTo(-3.4, -1.5, .7, -1.3, 2.1, -.5);
+  ctx.quadraticCurveTo(3.5, -1.6, 4.1, -4.6);
+  ctx.lineTo(5.4, -5.7);
+  ctx.lineTo(8.9, -4.9);
+  ctx.quadraticCurveTo(9.7, -3.6, 6.1, -3.4);
+  ctx.quadraticCurveTo(5.6, .4, 3.8, 1.4);
+  ctx.quadraticCurveTo(-.5, 3.1, -4.6, 2.2);
+  ctx.lineTo(-7.4, -1.1);
+  ctx.fill();
+
+  ctx.lineWidth = .87;
+  ctx.beginPath();
+  ctx.moveTo(-3.8, 1.4);
+  ctx.lineTo(-4.4 + Math.sin(stride) * 1.7, 4.6);
+  ctx.lineTo(-7 + Math.sin(stride) * 2.3, 5.9);
+  ctx.moveTo(2.6, 1.3);
+  ctx.lineTo(4.0 + Math.cos(stride) * 2, 3.3);
+  ctx.lineTo(3.4 + Math.cos(stride) * 2.8, 5.4);
+  ctx.stroke();
+
+  ctx.lineWidth = .60;
+  ctx.beginPath();
+  ctx.moveTo(5.4, -5.1);
+  ctx.lineTo(3.6, -8.2);
+  ctx.lineTo(3.3, -10);
+  ctx.moveTo(4.35, -7);
+  ctx.lineTo(1.9, -8);
+  ctx.moveTo(5.8, -5.7);
+  ctx.lineTo(5.9, -8.35);
+  ctx.lineTo(7.2, -9.6);
+  ctx.stroke();
+}
+
+function drawSleighBody(opacity) {
+  ctx.beginPath();
+  ctx.moveTo(-47, -4.2);
+  ctx.quadraticCurveTo(-43, -1, -38.5, -2.1);
+  ctx.lineTo(-30, -2.2);
+  ctx.quadraticCurveTo(-27.2, -2.3, -26.8, -4.5);
+  ctx.quadraticCurveTo(-25, -.9, -28.2, 2.4);
+  ctx.lineTo(-41.5, 2.9);
+  ctx.quadraticCurveTo(-46, 1.4, -47, -4.2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(-42.7, -3.7, 4.3, 3.6, -.46, 0, tau);
+  ctx.ellipse(-36.3, -5.4, 2.8, 2.6, 0, 0, tau);
+  ctx.ellipse(-33, -8.7, 1.8, 1.85, 0, 0, tau);
+  ctx.fill();
+  ctx.lineWidth = .9;
+  ctx.beginPath();
+  ctx.moveTo(-39.8, 2.8);
+  ctx.lineTo(-40, 5.3);
+  ctx.moveTo(-31.4, 2.8);
+  ctx.lineTo(-30.5, 5.0);
+  ctx.moveTo(-46, 5.5);
+  ctx.quadraticCurveTo(-27.6, 6.4, -26.8, 3.4);
+  ctx.stroke();
+  ctx.globalAlpha = opacity * .49;
+  ctx.fillStyle = '#edca96';
+  ctx.fillRect(-28.15, -.4, 1.15, 1.1);
 }
 
 function drawAurora(paint, ridge) {
@@ -1006,6 +1128,7 @@ function drawScene(t, dt) {
   galaxyWidth = Math.max(1, Math.min(2.8, width / (worldScale * 5.5)));
   if (backdropTheme !== effects.scenery) drawBackdrop();
   ctx.drawImage(backdrop, 0, 0, width, height);
+  drawSleighFlight(t);
   drawSnowContact();
   const trunk = (1 - spread) * (forming ? smoothProgress((t - .76) / 1.48) : 1);
   if (trunk > .025) paintBox(worldPose(0, 0, 0, .37), .103, .095, 0, .46, '#564637', false, trunk);
