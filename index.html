@@ -1686,6 +1686,7 @@ const settingsKey = 'winter-lights-settings' + personalSuffix;
 const defaultMemoryMessage = '把这一刻留在星光里。';
 const blessingStream = $('#blessing-stream');
 const dedication = $('#dedication');
+let blessingTimer;
 const giftThemes = {
   style: [['💄','口红'],['👜','小挎包'],['👠','高跟鞋'],['🧴','香水'],['📿','项链'],['💝','护肤礼盒'],['💐','花束'],['🍷','红酒'],['🧸','抱抱熊'],['🧣','冬日围巾']],
   game: [['🎮','游戏手柄'],['🎧','耳机'],['⌨️','键盘'],['📷','相机'],['🛹','滑板'],['⚽','足球'],['👟','运动鞋'],['🧩','拼图']],
@@ -1727,6 +1728,7 @@ function saveSettings() {
 }
 
 function renderBlessings() {
+  clearTimeout(blessingTimer);
   blessingStream.hidden = !effects.scattered;
   blessingStream.replaceChildren();
   if (!effects.scattered) return;
@@ -1742,33 +1744,65 @@ function renderBlessings() {
     readable.append(item);
   }
   blessingStream.append(readable);
+  if (motionPreference.matches) return;
 
   const lanes = document.createElement('div');
   lanes.setAttribute('aria-hidden', 'true');
-  const availableBands = [0, 1, 2];
+  blessingStream.append(lanes);
+  const active = new Map();
+  const limit = messages.length === 1 ? 2 : Math.min(messages.length, 4);
   let next = 0;
-  function launchBlessing(lane, band, delay) {
-    const text = messages[next++ % messages.length];
-    const top = messages.length === 1 ? 25 + Math.random() * 38 : 25 + band * 15 + Math.random() * 8;
+
+  function chooseHeight() {
+    for (let attempt = 0; attempt < 14; attempt++) {
+      const top = 25 + Math.random() * 43;
+      if ([...active.values()].every(entry => Math.abs(entry.top - top) >= 8)) return top;
+    }
+  }
+
+  function nextMessage() {
+    for (let i = 0; i < messages.length; i++) {
+      const text = messages[next++ % messages.length];
+      if (messages.length === 1 || [...active.values()].every(entry => entry.text !== text)) return text;
+    }
+  }
+
+  function launchBlessing(delay) {
+    if (active.size >= limit) return;
+    const top = chooseHeight();
+    if (top === undefined) return;
+    const text = nextMessage();
+    if (text === undefined) return;
+
+    const lane = document.createElement('div');
+    lane.className = 'blessing-lane';
     lane.style.top = top.toFixed(1) + '%';
     const message = document.createElement('span');
     message.className = 'blessing-message';
     message.textContent = text;
     message.style.animationDelay = delay + 's';
-    message.style.animationDuration = (9 + Math.sqrt(text.length) * .74) + 's';
+    message.style.animationDuration = (7.8 + Math.random() * 2.8 + Math.sqrt(text.length) * .64) + 's';
     message.addEventListener('animationend', () => {
-      if (lane.isConnected && effects.scattered) launchBlessing(lane, band, .75);
+      active.delete(lane);
+      lane.remove();
     }, { once: true });
-    lane.replaceChildren(message);
-  }
-  for (let i = 0; i < Math.min(3, messages.length); i++) {
-    const lane = document.createElement('div');
-    lane.className = 'blessing-lane';
-    const [band] = availableBands.splice(Math.floor(Math.random() * availableBands.length), 1);
+    lane.append(message);
+    active.set(lane, { top, text });
     lanes.append(lane);
-    launchBlessing(lane, band, i * 1.25);
   }
-  blessingStream.append(lanes);
+
+  function playBurst() {
+    if (!lanes.isConnected || !effects.scattered || motionPreference.matches) return;
+    const chance = Math.random();
+    const count = chance < .55 ? 1 : chance < .9 ? 2 : 3;
+    let delay = Math.random() * .3;
+    for (let i = 0; i < count; i++) {
+      launchBlessing(delay);
+      delay += messages.length === 1 ? 1.7 + Math.random() : .45 + Math.random() * 1.1;
+    }
+    blessingTimer = setTimeout(playBurst, 3200 + Math.random() * 6800);
+  }
+  playBurst();
 }
 dedication.value = settings.dedication || '';
 dedication.addEventListener('input', () => {
@@ -2002,6 +2036,7 @@ const largePhoto = $('#large-photo');
 const largeGift = $('#large-gift');
 const largeGiftArt = largeGift.querySelector('.gift-preview');
 const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+motionPreference.addEventListener?.('change', renderBlessings);
 let albumRequest = 0;
 let pictureReveal;
 let openGift, previousGift;
