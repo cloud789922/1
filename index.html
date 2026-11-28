@@ -43,13 +43,14 @@ h1{margin:12px 0 4px;font-family:"Songti SC","SimSun",Georgia,serif;font-size:cl
 .stage-actions svg{width:17px;height:17px}
 .camera-box{position:absolute;left:20px;bottom:21px;width:min(25%,160px);aspect-ratio:4/3;overflow:hidden;border-radius:12px;border:1px solid #718674;background:#000}
 .camera-box video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.stage-gift{--gift-front:#ba4746;--gift-edge:#682c34;--gift-top:#db7470;--ribbon:#f8d88b;position:absolute;aspect-ratio:1;min-height:62px;padding:0;border:0;background:transparent;overflow:visible;z-index:1}
-.stage-gift::before{content:"";position:absolute;inset:8% -34% -15%;background:radial-gradient(ellipse,#efba6266,transparent 70%);pointer-events:none}
-.gift-label{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 9px;border:1px solid #f8d88bc9;border-radius:999px;background:#2a1d1b;color:#ffedbc;box-shadow:0 0 15px #ffca6b51;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;pointer-events:none}
-.stage-gift.is-open .gift-label{opacity:0}
-.stage-gift:hover{background:transparent;filter:brightness(1.18)}
-.stage-gift[data-style=ice]{--gift-front:#487da4;--gift-edge:#2a4964;--gift-top:#77acd0;--ribbon:#d9f2fa}
-.stage-gift[data-style=pink]{--gift-front:#a74973;--gift-edge:#5c2947;--gift-top:#d8799f;--ribbon:#f6d0dc}
+.stage-gifts{--gift-front:#ba4746;--gift-edge:#682c34;--gift-top:#db7470;--ribbon:#f8d88b;position:absolute;inset:0;pointer-events:none}
+.stage-gifts[data-style=ice]{--gift-front:#487da4;--gift-edge:#2a4964;--gift-top:#77acd0;--ribbon:#d9f2fa}
+.stage-gifts[data-style=pink]{--gift-front:#a74973;--gift-edge:#5c2947;--gift-top:#d8799f;--ribbon:#f6d0dc}
+.stage-gift{--wrap-light:1;position:absolute;aspect-ratio:1;min-height:0;padding:0;border:0;background:transparent;overflow:visible;pointer-events:auto;filter:brightness(var(--wrap-light))}
+.stage-gift[data-tone=dark]{--wrap-light:.78}
+.stage-gift[data-tone=light]{--wrap-light:1.14}
+.stage-gift:hover,.stage-gift:focus-visible,.stage-gift.is-open{z-index:1;background:transparent;filter:brightness(1.25)}
+.stage-gift:hover::before,.stage-gift:focus-visible::before,.stage-gift.is-open::before{content:"";position:absolute;inset:0 -26% -14%;background:radial-gradient(ellipse,#efba6266,transparent 72%);pointer-events:none}
 .gift-body,.gift-lid{display:block;position:absolute;left:5%;border:1px solid var(--gift-edge);border-radius:3px;background:linear-gradient(90deg,transparent 43%,var(--ribbon) 43% 57%,transparent 57%),linear-gradient(90deg,var(--gift-front) 82%,var(--gift-edge) 82%);box-shadow:0 2px 8px #0008}
 .gift-body{top:38%;width:90%;height:55%}
 .gift-lid{top:28%;left:0;width:100%;height:22%;background-color:var(--gift-top);background-image:linear-gradient(90deg,transparent 43%,var(--ribbon) 43% 57%,transparent 57%);transform-origin:83% 70%;transition:transform .33s cubic-bezier(.19,.82,.31,1)}
@@ -117,7 +118,7 @@ dialog.show-picture .photo-card{padding:clamp(7px,1.5vw,14px);border:1px solid #
 <script type="module">
 const canvas = document.querySelector('#scene');
 const ctx = canvas.getContext('2d', { alpha: false });
-const giftTarget = document.querySelector('#stage-gift');
+const giftStage = document.querySelector('#stage-gifts');
 const stageStatus = document.querySelector('#mode').lastChild;
 const tau = Math.PI * 2;
 const formationTime = 2.28;
@@ -130,11 +131,29 @@ const palettes = {
   rose: ['#a44470', '#f579a9', '#ffc0d9', '#ffe5ad', '#e68fbd', '#fff2e2'],
 };
 const introPalette = ['#c6a266', '#e8bf76', '#ffe6aa', '#fff0c9', '#dbb679', '#fff9de'];
-const giftColors = {
-  classic: ['#813c37', '#522c2e', '#d08362', '#f1c87e'],
-  ice: ['#416f94', '#2a4964', '#77acd0', '#d0ecf2'],
-  pink: ['#9b496e', '#603146', '#d8799f', '#f6c9d3'],
-};
+// Horizontal offset from the trunk, floor depth, scale, wrapping tone.
+const giftPositions = [
+  [-.95, -.45, .68, 'dark'], [-.65, -.58, .81, 'light'], [-.21, -.45, .72, 'dark'],
+  [.10, -.56, .68, 'light'], [.66, -.55, .86, 'dark'], [.98, -.42, .67, 'light'],
+  [-.90, .12, .96, 'main'], [-.60, .27, .72, 'light'], [-.15, .25, .83, 'main'],
+  [.15, .20, .74, 'dark'], [.61, .18, 1, 'main'], [.93, .27, .82, 'light'],
+];
+const stageGifts = giftPositions.map(([, , , tone], index) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'stage-gift';
+  button.dataset.tone = tone;
+  button.setAttribute('aria-label', '打开树下第 ' + (index + 1) + ' 个礼盒');
+  button.setAttribute('aria-haspopup', 'dialog');
+  for (const part of ['gift-body', 'gift-lid']) {
+    const decoration = document.createElement('span');
+    decoration.className = part;
+    decoration.setAttribute('aria-hidden', 'true');
+    button.append(decoration);
+  }
+  giftStage.append(button);
+  return button;
+});
 const effects = { scattered: false, density: 3000, palette: 'pine', color: '#8fe8af', shape: 'glow', gift: 'classic', energy: 0 };
 let width, height, center, top, tall, ground, radius, mobile;
 let spread = 0;
@@ -197,10 +216,16 @@ function resize() {
   tall = height * .56;
   ground = top + tall;
   radius = Math.min(width * .40, tall * .64);
-  const boxSize = Math.max(62, Math.min(90, radius * .31));
-  giftTarget.style.width = boxSize + 'px';
-  giftTarget.style.left = center + radius * .55 + 'px';
-  giftTarget.style.top = ground + (mobile ? 4 : 21) - boxSize + 'px';
+  const boxScale = Math.max(48, Math.min(80, radius * .275));
+  const pileRadius = Math.min(radius, Math.max(0, Math.min(center, width - center) - boxScale * .45));
+  const floor = ground + (mobile ? 3 : 12);
+  for (const [index, [x, depth, scale]] of giftPositions.entries()) {
+    const button = stageGifts[index];
+    const size = boxScale * scale;
+    button.style.width = size + 'px';
+    button.style.left = center + x * pileRadius - size / 2 + 'px';
+    button.style.top = floor + depth * boxScale - size + 'px';
+  }
   drawBackdrop();
   invalidateScene();
 }
@@ -303,46 +328,6 @@ function drawOpeningSpiral(t, rotation) {
   ctx.globalAlpha = 1;
 }
 
-function drawGift(x, y, size, colors) {
-  const depth = size * .32;
-  ctx.fillStyle = colors[1];
-  ctx.fillRect(x, y - size * .74, size, size * .74);
-  ctx.fillStyle = colors[0];
-  ctx.fillRect(x + 1, y - size * .72, size - 2, size * .69);
-  ctx.fillStyle = colors[2];
-  ctx.beginPath();
-  ctx.moveTo(x, y - size * .74);
-  ctx.lineTo(x + depth, y - size * .97);
-  ctx.lineTo(x + size + depth, y - size * .97);
-  ctx.lineTo(x + size, y - size * .74);
-  ctx.fill();
-  ctx.fillStyle = colors[1];
-  ctx.beginPath();
-  ctx.moveTo(x + size, y);
-  ctx.lineTo(x + size + depth, y - size * .23);
-  ctx.lineTo(x + size + depth, y - size * .97);
-  ctx.lineTo(x + size, y - size * .74);
-  ctx.fill();
-  ctx.fillStyle = colors[3];
-  ctx.fillRect(x + size * .43, y - size * .76, size * .14, size * .76);
-  ctx.fillRect(x, y - size * .39, size, size * .07);
-  ctx.beginPath();
-  ctx.moveTo(x + size * .43, y - size * .74);
-  ctx.lineTo(x + size * .57, y - size * .74);
-  ctx.lineTo(x + depth + size * .57, y - size * .97);
-  ctx.lineTo(x + depth + size * .43, y - size * .97);
-  ctx.fill();
-  ctx.strokeStyle = colors[3];
-  ctx.lineWidth = Math.max(1, size * .05);
-  ctx.beginPath();
-  const bow = x + size * .64;
-  const top = y - size * .88;
-  ctx.moveTo(bow, top);
-  ctx.bezierCurveTo(bow - size * .6, top - size * .39, bow - size * .49, top + size * .07, bow, top);
-  ctx.bezierCurveTo(bow + size * .26, top - size * .49, bow + size * .55, top - size * .10, bow, top);
-  ctx.stroke();
-}
-
 function drawScene(t, dt) {
   if (t >= formationTime || effects.scattered) introFinished = true;
   const forming = !introFinished;
@@ -435,14 +420,6 @@ function drawScene(t, dt) {
     }
     ctx.globalAlpha = 1;
   }
-  if (giftColors[effects.gift] && spread < .99) {
-    ctx.globalAlpha = 1 - spread;
-    const box = Math.max(23, Math.min(55, radius * .205));
-    drawGift(center - radius * .65, ground + 14, box * .9, giftColors[effects.gift]);
-    drawGift(center + radius * .39, ground + 26, box * .77, giftColors[effects.gift]);
-    drawGift(center - radius * .38, ground + 35, box * .69, giftColors[effects.gift]);
-    ctx.globalAlpha = 1;
-  }
   ctx.fillStyle = '#d8e5d7';
   for (const [x, y, size, speed] of snow) {
     ctx.globalAlpha = .26 + speed * .34;
@@ -454,8 +431,8 @@ function drawScene(t, dt) {
 }
 
 function syncGiftControl() {
-  giftTarget.hidden = effects.scattered || effects.gift === 'none';
-  giftTarget.dataset.style = effects.gift;
+  giftStage.hidden = effects.scattered || effects.gift === 'none';
+  giftStage.dataset.style = effects.gift;
 }
 
 function drawSpark(x, y, size, inner) {
@@ -991,13 +968,13 @@ $('#photo-file').addEventListener('change', async event => {
 });
 
 const dialog = $('#album');
-const giftButton = $('#stage-gift');
 const greetingCover = $('#open-greeting');
 const greetingPicture = $('#greeting-picture');
 const largePhoto = $('#large-photo');
 const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
 let albumRequest = 0;
 let giftEntrance, coverTurn, pictureReveal;
+let openGift, previousGift;
 
 function selectPhoto(index) {
   const hasPhotos = photos.length > 0;
@@ -1010,18 +987,26 @@ function selectPhoto(index) {
   largePhoto.alt = photo.name;
 }
 
-function giftBounds() {
-  if (giftButton.hidden) return null;
-  const bounds = giftButton.getBoundingClientRect();
-  return bounds.bottom > 0 && bounds.top < innerHeight ? bounds : null;
+function chooseGift(requestedGift) {
+  const candidates = (requestedGift ? [requestedGift] : stageGifts)
+    .map(button => ({ button, bounds: button.getBoundingClientRect() }))
+    .filter(({ bounds }) => bounds.width && bounds.top + bounds.height * .36 > 0 &&
+      bounds.top + bounds.height * .36 < innerHeight);
+  const fresh = candidates.filter(({ button }) => button !== previousGift);
+  const available = fresh.length ? fresh : candidates;
+  return available[Math.floor(Math.random() * available.length)];
 }
 
-function showGiftCard(index) {
-  selectPhoto(index);
+function showGiftCard(index, requestedGift) {
   if (dialog.open) return;
-  const origin = motionPreference.matches ? null : giftBounds();
+  selectPhoto(index);
+  const chosen = chooseGift(requestedGift);
+  const origin = motionPreference.matches ? null : chosen?.bounds;
+  if (chosen) {
+    openGift = previousGift = chosen.button;
+    openGift.classList.add('is-open');
+  }
   if (origin && greetingCover.animate) {
-    giftButton.classList.add('is-open');
     dialog.classList.add('gift-opening');
   }
   greetingCover.hidden = false;
@@ -1072,16 +1057,16 @@ function openGreeting() {
   };
 }
 
-function showNextPhoto() {
+function showNextPhoto(requestedGift) {
   const request = ++albumRequest;
   void photosReady.then(() => {
     if (request !== albumRequest) return;
-    if (!dialog.open) showGiftCard(currentPhoto + 1);
+    if (!dialog.open) showGiftCard(currentPhoto + 1, requestedGift);
     else if (!greetingCover.hidden) openGreeting();
   });
 }
 
-giftButton.onclick = showNextPhoto;
+for (const gift of stageGifts) gift.onclick = () => showNextPhoto(gift);
 greetingCover.onclick = openGreeting;
 $('#greeting-add').onclick = () => {
   dialog.close();
@@ -1093,7 +1078,8 @@ dialog.addEventListener('close', () => {
   coverTurn?.cancel();
   pictureReveal?.cancel();
   giftEntrance = coverTurn = pictureReveal = null;
-  giftButton.classList.remove('is-open');
+  openGift?.classList.remove('is-open');
+  openGift = null;
   dialog.classList.remove('gift-opening');
 });
 dialog.addEventListener('click', event => {
@@ -1130,10 +1116,7 @@ setupMusic(energy => { effects.energy = energy; });
     <div class="stage-status" id="mode"><i></i>星光汇聚中</div>
     <noscript><p class="script-message">请开启 JavaScript 后重新打开星树。</p></noscript>
     <div class="camera-box" id="camera-box" hidden><video id="preview" autoplay playsinline muted></video></div>
-    <button id="stage-gift" class="stage-gift" type="button" aria-label="打开树下礼盒" aria-haspopup="dialog" hidden>
-      <span class="gift-body" aria-hidden="true"></span><span class="gift-lid" aria-hidden="true"></span>
-      <span class="gift-label" aria-hidden="true">打开礼盒</span>
-    </button>
+    <div id="stage-gifts" class="stage-gifts" role="group" aria-label="树下礼盒" hidden></div>
     <div class="stage-actions" aria-label="手动控制圣诞树">
       <button data-action="tree" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="m12 3 5 7h-2l4 6H5l4-6H7l5-7zm0 13v5"/></svg>汇聚</button>
       <button data-action="scatter" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 2v7m0 6v7M2 12h7m6 0h7M5 5l3 3m8 8 3 3m0-14-3 3m-8 8-3 3"/></svg>散开</button>
@@ -1146,7 +1129,7 @@ setupMusic(energy => { effects.energy = energy; });
       <div class="gesture-grid">
         <div data-gesture="tree"><svg viewBox="0 0 32 32"><path d="M8 17v-4a2 2 0 0 1 4 0v-2a2 2 0 0 1 4 0v-1a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v7c0 4-3 8-8 8-4 0-7-3-8-7l-2-5a2 2 0 0 1 3-2l4 4h5m-6-4v2m4-3v3m4-3v3"/></svg><b>握拳</b><small>汇聚成树</small></div>
         <div data-gesture="scatter"><svg viewBox="0 0 32 32"><path d="M9 17V9a1.7 1.7 0 0 1 3.4 0v6-9a1.7 1.7 0 0 1 3.4 0v9-10a1.7 1.7 0 0 1 3.4 0v10-7a1.7 1.7 0 0 1 3.4 0v10l2-2a2 2 0 0 1 3 2l-3 6a8.5 8.5 0 0 1-15 .4L5 18a2 2 0 0 1 3-2l1 1z"/></svg><b>摊手</b><small>粒子散开</small></div>
-        <div data-gesture="photo"><svg viewBox="0 0 32 32"><path d="M10 17c-2-1-3-4-1-7 2-3 6-4 9-3l4 2a2 2 0 0 1-2 3l-4-1a4 4 0 0 0-3 2c-1 2 0 4 3 4h2l3-3a2 2 0 0 1 3 2l-2 3 4-2a2 2 0 0 1 2 3l-5 4c-2 2-4 3-8 3-5 0-8-3-10-7a2 2 0 0 1 3-2l3 2h4"/><path d="M6 8 4 6m1 6H2"/></svg><b>捏指</b><small>打开礼盒</small></div>
+        <div data-gesture="photo"><svg viewBox="0 0 32 32"><path d="M10 17c-2-1-3-4-1-7 2-3 6-4 9-3l4 2a2 2 0 0 1-2 3l-4-1a4 4 0 0 0-3 2c-1 2 0 4 3 4h2l3-3a2 2 0 0 1 3 2l-2 3 4-2a2 2 0 0 1 2 3l-5 4c-2 2-4 3-8 3-5 0-8-3-10-7a2 2 0 0 1 3-2l3 2h4"/><path d="M6 8 4 6m1 6H2"/></svg><b>捏指</b><small>唤出贺卡</small></div>
       </div>
       <p class="hint" id="camera-status" aria-live="polite">开启摄像头后，将一只手放在画面内。</p>
     </section>
