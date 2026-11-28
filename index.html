@@ -247,12 +247,20 @@ const particles = Array.from({ length: maxParticles }, (_, i) => {
 });
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
 const snow = Array.from({length: 96}, () => [random(), random(), random(1.7) + .3, random()]);
-const sceneSweepFlakes = Array.from({ length: 196 }, (_, index) => ({
-  delay: (index * .414 % 1) * .43 + random(.08),
-  height: -.15 + (index * .618 % 1) * 1.05 + random(.06),
-  size: index % 7 === 0 ? 5.4 + random(5.1) : 1.25 + random(3.3),
-  drift: random(1),
-}));
+const sweepColumns = 40;
+const sweepRows = 14;
+const sceneSweepFlakes = Array.from({ length: sweepColumns * sweepRows }, (_, index) => {
+  const row = Math.floor(index / sweepColumns);
+  return {
+    x: (index % sweepColumns + random(1)) / sweepColumns,
+    y: (row + random(1)) / sweepRows,
+    thinOutOnMobile: (row + index) % 2 === 1,
+    enter: .018 + random(.39),
+    leave: .59 + random(.38),
+    size: index % 7 === 0 ? 5.4 + random(6.2) : 1.25 + random(3.3),
+    drift: random(1),
+  };
+});
 let nextSleighAt = 7 + random(7);
 let sleighFlight;
 const winterThemes = {
@@ -370,18 +378,18 @@ function drawSceneSnowSweep(t) {
     sceneSweepStart = null;
     return;
   }
-  const envelope = smoothProgress(progress / .15) * smoothProgress((1 - progress) / .27);
   ctx.fillStyle = '#f6faff';
   for (const [index, flake] of sceneSweepFlakes.entries()) {
-    if (mobile && index % 4 === 1) continue;
-    const fly = (progress - flake.delay * .76) / (.59 + flake.drift * .30);
-    const x = width * (1.04 - fly * 1.14);
-    const y = height * (flake.height + fly * (.15 + flake.drift * .15)) + Math.sin(fly * 8 + index) * 6;
+    if ((mobile && flake.thinOutOnMobile) || progress < flake.enter || progress > flake.leave) continue;
+    const driftFromPeak = progress - .52;
+    const x = width * (flake.x - driftFromPeak * (.78 + flake.drift * .84));
+    const y = height * (flake.y + driftFromPeak * (.18 + flake.drift * .30)) + Math.sin(progress * 8 + index) * 6;
     if (x < -12 || x > width + 12 || y < -12 || y > height + 12) continue;
-    const size = flake.size * (mobile ? .82 : 1);
-    ctx.globalAlpha = envelope * (.39 + flake.drift * .46);
+    const size = flake.size * (mobile ? .79 : 1);
+    const fade = smoothProgress((progress - flake.enter) / .12) * smoothProgress((flake.leave - progress) / .105);
+    ctx.globalAlpha = fade * (.43 + flake.drift * .43);
     if (index % 7 === 0) {
-      drawSweepSnowflake(x, y, size, index + fly * 1.15);
+      drawSweepSnowflake(x, y, size, index + progress * 1.8);
     } else if (index % 3 === 0) {
       ctx.drawImage(iceHalo, x - size * 3.5, y - size * 2, size * 7, size * 4);
     } else {
