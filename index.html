@@ -41,11 +41,40 @@ svg {
 .eyebrow span { font-size: 21px; }
 h1 { margin: 12px 0 0; font: 400 clamp(42px,6.7vw,106px)/.83 Georgia,serif; letter-spacing: -.065em; text-shadow: 0 7px 32px #050d20, 0 0 50px #eec78024; }
 .title-break { display: none; }
-.scene-greeting { margin-top: clamp(16px,3.5vh,31px); padding-left: 12px; border-left: 1px solid #e9cb7c80; text-shadow: 0 1px 8px #060b19; }
-.scene-greeting p { margin: 4px 0; font-size: clamp(12px,1.35vw,16px); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-#hero-message { color: #dde4f0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-#hero-recipient { font-weight: 700; }
-#hero-sender { color: #f0d794; font-size: 12px; }
+.blessing-stream { position: absolute; z-index: 4; inset: 0; overflow: hidden; pointer-events: none; }
+.blessing-lane { position: absolute; left: 100%; width: max-content; }
+.blessing-message {
+  display: block;
+  padding: .24em .75em;
+  border-radius: 999px;
+  background: #09142bc7;
+  color: #ffe7b5;
+  font-size: clamp(14px,1.55vw,21px);
+  text-shadow: 0 0 10px #d8a86c80;
+  white-space: pre;
+  animation: blessing-flight linear both;
+}
+@keyframes blessing-flight { to { transform: translateX(calc(-100vw - 100%)); } }
+.blessings-readable { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (prefers-reduced-motion: reduce) {
+  .blessing-lane { display: none; }
+  .blessings-readable {
+    inset: 28% 10% auto;
+    width: auto;
+    max-height: 39%;
+    height: auto;
+    padding: .65em 1em;
+    list-style: none;
+    clip-path: none;
+    overflow: auto;
+    overflow-wrap: anywhere;
+    pointer-events: auto;
+    text-align: center;
+    color: #ffe7b5;
+    background: #09142bd9;
+    border-radius: 12px;
+  }
+}
 .countdown { margin: 12px 0 0; color: #c4d0e6; font-size: 12px; font-variant-numeric: tabular-nums; }
 .stage-scene { position: absolute; top: clamp(22px,5.8vh,56px); right: clamp(16px,4.2vw,65px); display: grid; gap: 5px; }
 .stage-scene label { font-size: 12px; color: #d6dfed; }
@@ -170,7 +199,6 @@ small, .hint { color: var(--muted); font-size: 12px; }
 @media (max-width:680px) {
   .stage-heading { max-width: 69vw; }
   h1 { font-size: clamp(35px,10vw,57px); }
-  .scene-greeting { margin-top: 14px; }
   .countdown { margin-top: 7px; font-size: 10px; }
   .stage-scene { right: 12px; }
   .stage-scene select { min-width: 99px; padding: 6px; font-size: 12px; }
@@ -1665,6 +1693,7 @@ try { shared = JSON.parse(starter?.textContent || '{}') || {}; } catch {}
 const personalSuffix = shared.id ? '-' + shared.id : '';
 const settingsKey = 'winter-lights-settings' + personalSuffix;
 const defaultGreeting = '愿这个冬夜，有星光也有温暖。';
+const blessingStream = $('#blessing-stream');
 const giftThemes = {
   style: [['💄','口红'],['👜','小挎包'],['👠','高跟鞋'],['🧴','香水'],['📿','项链'],['💝','护肤礼盒'],['💐','花束'],['🍷','红酒'],['🧸','抱抱熊'],['🧣','冬日围巾']],
   game: [['🎮','游戏手柄'],['🎧','耳机'],['⌨️','键盘'],['📷','相机'],['🛹','滑板'],['⚽','足球'],['👟','运动鞋'],['🧩','拼图']],
@@ -1703,26 +1732,60 @@ function saveSettings() {
   try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch {}
 }
 
-function renderGreeting() {
+function renderBlessings() {
+  blessingStream.hidden = !effects.scattered;
+  blessingStream.replaceChildren();
+  if (!effects.scattered) return;
+
   const recipient = $('#recipient').value.trim();
   const sender = $('#sender').value.trim();
-  const message = $('#dedication').value.trim();
-  $('#hero-recipient').hidden = !recipient;
-  $('#hero-recipient').textContent = '送给 ' + recipient;
-  $('#hero-sender').hidden = !sender;
-  $('#hero-sender').textContent = '来自 ' + sender;
-  $('#hero-message').textContent = message || defaultGreeting;
+  const messages = $('#dedication').value.split('\n').map(line => line.trim()).filter(Boolean);
+  if (!messages.length) messages.push(defaultGreeting);
+  const signature = [recipient && '送给 ' + recipient, sender && '来自 ' + sender].filter(Boolean).join(' · ');
+  if (signature) messages.push(signature);
+
+  const readable = document.createElement('ul');
+  readable.className = 'blessings-readable';
+  for (const text of messages) {
+    const item = document.createElement('li');
+    item.textContent = text;
+    readable.append(item);
+  }
+  blessingStream.append(readable);
+
+  const lanes = document.createElement('div');
+  lanes.setAttribute('aria-hidden', 'true');
+  let next = 0;
+  function launchBlessing(lane, delay) {
+    const text = messages[next++ % messages.length];
+    const message = document.createElement('span');
+    message.className = 'blessing-message';
+    message.textContent = text;
+    message.style.animationDelay = delay + 's';
+    message.style.animationDuration = (9 + Math.sqrt(text.length) * .74) + 's';
+    message.addEventListener('animationend', () => {
+      if (lane.isConnected && effects.scattered) launchBlessing(lane, .75);
+    }, { once: true });
+    lane.replaceChildren(message);
+  }
+  for (let i = 0; i < Math.min(3, messages.length); i++) {
+    const lane = document.createElement('div');
+    lane.className = 'blessing-lane';
+    lane.style.top = (29 + i * 13) + '%';
+    lanes.append(lane);
+    launchBlessing(lane, i * 1.25);
+  }
+  blessingStream.append(lanes);
 }
 for (const id of ['recipient', 'sender', 'dedication']) {
   const input = document.getElementById(id);
   input.value = settings[id] || '';
   input.addEventListener('input', () => {
     settings[id] = input.value;
-    renderGreeting();
+    renderBlessings();
     saveSettings();
   });
 }
-renderGreeting();
 
 function updateCountdown() {
   const now = new Date();
@@ -1814,10 +1877,12 @@ function renderMemoryCards() {
 }
 
 function setScene(action) {
+  const wasScattered = effects.scattered;
   effects.scattered = action === 'scatter';
   stage.dataset.orbit = String(effects.scattered);
   $('#orbit-hint').hidden = !effects.scattered;
   syncGiftControl();
+  if (effects.scattered !== wasScattered) renderBlessings();
   for (const button of document.querySelectorAll('[aria-pressed][data-action]')) {
     button.setAttribute('aria-pressed', String(button.dataset.action === action));
   }
@@ -2241,13 +2306,9 @@ shareButton.onclick = async () => {
     <header class="stage-heading">
       <div class="eyebrow"><span aria-hidden="true">✧</span> 冬夜星树</div>
       <h1>Merry<br class="title-break"> Christmas</h1>
-      <div class="scene-greeting">
-        <p id="hero-recipient" hidden></p>
-        <p id="hero-message">愿这个冬夜，有星光也有温暖。</p>
-        <p id="hero-sender" hidden></p>
-      </div>
       <p class="countdown" id="christmas-countdown"></p>
     </header>
+    <section id="blessing-stream" class="blessing-stream" aria-label="祝福弹幕" hidden></section>
     <div class="stage-scene"><label for="setting-scene">冬夜场景</label><select id="setting-scene">
       <option value="forest">月夜雪林</option><option value="cabin">壁炉小屋</option><option value="aurora">极光山谷</option><option value="dawn">晨曦雪原</option>
     </select><button id="fullscreen" type="button" hidden>全屏</button></div>
@@ -2276,7 +2337,7 @@ shareButton.onclick = async () => {
       <div class="personal-fields">
         <label>送给<input id="recipient" maxlength="28" placeholder="收礼人的名字"></label>
         <label>来自<input id="sender" maxlength="28" placeholder="你的名字"></label>
-        <label>祝福<textarea id="dedication" maxlength="160" rows="3" placeholder="写几句想说的话"></textarea></label>
+        <label>祝福弹幕<textarea id="dedication" maxlength="1200" rows="4" placeholder="输入祝福文字，每行一条" aria-describedby="blessing-hint"></textarea><small id="blessing-hint">散开时显示，留空使用默认祝福。</small></label>
       </div>
     </section>
     <section class="panel">
