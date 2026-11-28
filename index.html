@@ -64,25 +64,103 @@ h1 { margin: 12px 0 0; font: 400 clamp(42px,6.7vw,106px)/.83 Georgia,serif; lett
 .orbit-hint { position: absolute; z-index: 5; bottom: 78px; left: 50%; transform: translateX(-50%); margin: 0; color: #dae5fb; font-size: 12px; white-space: nowrap; pointer-events: none; }
 .script-message { position: absolute; inset: 45% 20px auto; text-align: center; }
 .stage-gifts, .floating-memories { position: absolute; inset: 0; pointer-events: none; }
-.stage-gifts { --gift-front: #933e4a; --gift-edge: #542c42; --gift-top: #b46f68; --ribbon: #e6c58d; }
-.stage-gifts[data-style=ice] { --gift-front: #527494; --gift-edge: #354969; --gift-top: #85a5c2; --ribbon: #cfe4eb; }
-.stage-gifts[data-style=pink] { --gift-front: #8a5270; --gift-edge: #54354f; --gift-top: #b17a91; --ribbon: #edd1bf; }
-.stage-gift { --wrap-light: 1; position: absolute; aspect-ratio: 1; padding: 0; border: 0; background: transparent; pointer-events: auto; isolation: isolate; filter: brightness(var(--wrap-light)); }
-.stage-gift[data-tone=dark] { --wrap-light: .72; }
-.stage-gift[data-tone=light] { --wrap-light: 1.13; }
-.stage-gifts[data-style=classic] .stage-gift[data-tone=dark] { --gift-front: #42665d; --gift-edge: #2b424f; --gift-top: #6d896e; }
-.stage-gift::before { content: ""; position: absolute; z-index: -1; inset: 73% -13% -6%; background: radial-gradient(ellipse,#03081abd,#080e2975 48%,transparent 72%); }
-.stage-gift:hover, .stage-gift:focus-visible, .stage-gift.is-open { z-index: 1; background: transparent; filter: brightness(1.3); }
-.gift-body, .gift-lid { position: absolute; display: block; border: 1px solid var(--gift-edge); border-radius: 2px; }
-.gift-body { left: 6%; top: 37%; width: 89%; height: 51%; background: linear-gradient(145deg,#ffe3ae3d,transparent 49%,#10081c30), linear-gradient(90deg,transparent 41%,var(--ribbon) 42% 54%,transparent 55%), linear-gradient(90deg,var(--gift-front) 78%,var(--gift-edge) 80%); }
-.gift-lid { top: 26%; left: 1%; width: 98%; height: 21%; background: linear-gradient(155deg,#ffe3ae62,transparent 48%), linear-gradient(90deg,transparent 42%,var(--ribbon) 43% 55%,transparent 56%), var(--gift-top); transform-origin: 83% 70%; transition: transform .33s cubic-bezier(.19,.82,.31,1); }
-.gift-lid::before, .gift-lid::after { content: ""; position: absolute; bottom: 100%; width: 21%; height: 71%; border: 1.5px solid var(--ribbon); border-radius: 85% 80% 10% 70%; right: 50%; transform: rotate(17deg); transform-origin: 100% 100%; }
-.gift-lid::after { right: auto; left: 50%; transform: scaleX(-1) rotate(17deg); transform-origin: 0 100%; }
-.stage-gift.is-open .gift-lid { transform: translate(14%,-150%) rotate(22deg); }
+.stage-gift {
+  --paper: #fac39a;
+  --ribbon: #fff1ce;
+  position: absolute;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  pointer-events: auto;
+  isolation: isolate;
+}
+.stage-gift[data-tone=red] { --paper: #d52a41; }
+.stage-gift[data-tone=pink] { --paper: #df819a; }
+.stage-gift[data-tone=cream] { --paper: #eee1c9; }
+.stage-gifts[data-style=ice] .stage-gift { --ribbon: #deeffa; }
+.stage-gifts[data-style=ice] .stage-gift[data-tone=red] { --paper: #477fae; }
+.stage-gifts[data-style=ice] .stage-gift[data-tone=pink] { --paper: #78aebb; }
+.stage-gifts[data-style=pink] .stage-gift[data-tone=red] { --paper: #b04068; }
+.stage-gifts[data-style=pink] .stage-gift[data-tone=cream] { --paper: #f6c8cf; }
+.stage-gift::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 72% -14% -9%;
+  background: radial-gradient(ellipse,#03081ae8,transparent 72%);
+}
+.stage-gifts[inert] .stage-gift { pointer-events: none; }
+.stage-gifts[inert] .stage-gift::before { opacity: 0; }
+.stage-gift:hover, .stage-gift:focus-visible, .stage-gift.is-open { z-index: 1; background: transparent; filter: brightness(1.18); }
+.gift-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  transform: rotate(var(--gift-angle,0deg));
+}
+.gift-front {
+  clip-path: polygon(4% 33%,38% 47%,38% 93%,4% 78%);
+  background: linear-gradient(145deg,#fff4dc26,transparent 45%,#150a27a6),
+    linear-gradient(90deg,transparent 17%,var(--ribbon) 17% 25%,transparent 25%),var(--paper);
+}
+.gift-side {
+  clip-path: polygon(37.8% 47%,95% 31%,95% 76%,37.8% 93%);
+  background: linear-gradient(165deg,#fff3da24,transparent 61%,#140b2761),
+    linear-gradient(90deg,transparent 62%,var(--ribbon) 62% 71%,transparent 71%),var(--paper);
+}
+.gift-lid {
+  clip-path: polygon(3% 34%,60% 16%,96% 30%,96% 36%,38% 53%,3% 39%);
+  background: linear-gradient(155deg,#fff5d6b8,transparent 49%),
+    linear-gradient(164deg,transparent 32%,var(--ribbon) 32% 37%,transparent 37%),
+    linear-gradient(24deg,transparent 51%,var(--ribbon) 51% 57%,transparent 57%),var(--paper);
+  transition: transform .36s cubic-bezier(.19,.82,.31,1);
+}
+.stage-gift.is-open .gift-lid { transform: translate(20%,-38%) rotate(26deg); }
+.stage-gift.is-open::after {
+  content: "";
+  position: absolute;
+  inset: -35% -20% 17%;
+  background: radial-gradient(ellipse at 50% 72%,#fff2c3df, #ffd98d65 27%,transparent 58%);
+  pointer-events: none;
+  animation: gift-shine 620ms ease-out both;
+}
+@keyframes gift-shine { from { opacity: 0; } 30% { opacity: 1; } to { opacity: .35; } }
 .floating-memories { z-index: 3; }
-.memory-token { position: absolute; top: 0; left: 0; display: grid; place-items: center; width: 47px; height: 49px; padding: 5px; border: 1px solid #e4c790; border-radius: 5px; color: #231b29; background: #f2e3c8; box-shadow: 0 0 15px #f7d97b46,0 4px 10px #0006; font-size: 21px; pointer-events: auto; }
-.memory-token:hover, .memory-token:focus-visible { background: #fff1d4; border-color: white; box-shadow: 0 0 18px #ffe8a38c; }
-.memory-token img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+.memory-token, .large-gift {
+  --frame: #e8caa1;
+  --mat: #fff3e6;
+  border: 1px solid #fae8c8;
+  border-radius: 3px;
+  background: linear-gradient(145deg,#fff1d4,var(--frame) 58%,#b78f70);
+  color: #402838;
+}
+.memory-token {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: stretch;
+  width: clamp(43px,4.65vw,66px);
+  aspect-ratio: 1;
+  padding: clamp(4px,.54vw,8px);
+  box-shadow: 0 0 14px #ffe4b080,0 3px 9px #20102e9e;
+  font-size: clamp(19px,2.35vw,32px);
+  pointer-events: auto;
+}
+.memory-token:hover, .memory-token:focus-visible { background: #fff1d4; border-color: white; box-shadow: 0 0 20px #ffe8a3cf; }
+.memory-token img, .memory-art {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 1px solid #a97f69;
+  box-shadow: inset 0 1px 5px #86605630;
+  background: radial-gradient(ellipse at 28% 20%,#fffaf4,var(--mat) 73%,#e4cbca);
+}
+.memory-token img { object-fit: cover; }
+.memory-art { display: grid; place-items: center; line-height: 1; }
 dialog { padding: 0; color: var(--text); }
 dialog::backdrop { background: #04091bb3; }
 .studio { margin: 0 0 0 auto; width: min(100%,405px); max-width: none; height: 100%; max-height: none; inset: 0 0 0 auto; border: 0; border-left: 1px solid #a8bce94d; background: #101a2f; overflow: auto; }
@@ -148,8 +226,10 @@ small, .hint { color: var(--muted); font-size: 12px; }
 .greeting-english { font: italic 28px/1.1 Georgia,serif; }
 .greeting-cover span:last-child { font-size: 13px; }
 #large-photo { display: block; width: auto; max-width: min(82vw,800px); max-height: 78svh; border-radius: 5px; }
-.large-gift { display: grid; place-items: center; gap: 12px; width: min(72vw,345px); aspect-ratio: 1; border-radius: 5px; background: radial-gradient(ellipse,#fff9e8,#e5d1bc); color: #2c2434; padding: 12px; text-align: center; }
-.large-gift span { font-size: clamp(52px,14vw,114px); }
+.large-gift { width: min(72vw,68svh,345px); aspect-ratio: 1; padding: clamp(10px,2.4vw,18px); text-align: center; box-shadow: 0 0 44px #ffd89770,0 18px 55px #000b; }
+.large-gift .memory-art { align-content: center; gap: 15px; }
+.large-gift .memory-art span { font-size: clamp(52px,14vw,114px); }
+.large-gift strong { font-size: clamp(13px,3vw,18px); }
 .greeting-picture:focus { outline: 0; }
 .greeting-empty { background: #172239; border-radius: 5px; padding: 16px; text-align: center; }
 .greeting-empty button { min-height: 35px; }
@@ -169,9 +249,12 @@ small, .hint { color: var(--muted); font-size: 12px; }
   .camera-box { right: 9px; bottom: 68px; width: 80px; }
   .camera-feedback { bottom: 66px; right: 96px; }
   .orbit-hint { bottom: 69px; font-size: 11px; }
-  .memory-token { width: 37px; height: 39px; font-size: 16px; padding: 4px; }
+  .memory-token { width: 38px; font-size: 18px; padding: 4px; }
 }
-@media (prefers-reduced-motion:reduce) { .gift-lid { transition: none; } }
+@media (prefers-reduced-motion:reduce) {
+  .gift-lid { transition: none; }
+  .stage-gift.is-open::after { animation: none; }
+}
 
 </style>
 <script type="module">
@@ -190,13 +273,20 @@ const palettes = {
   rose: ['#a44470', '#f579a9', '#ffc0d9', '#ffe5ad', '#e68fbd', '#fff2e2'],
 };
 const introPalette = ['#c6a266', '#e8bf76', '#ffe6aa', '#fff0c9', '#dbb679', '#fff9de'];
-// Horizontal offset from the trunk, floor depth, scale, wrapping tone.
+// Arrange from back to front: horizontal offset, depth, size, paper.
 const giftPositions = [
-  [-.88, -.25, .65, 'dark'], [-.63, -.37, .78, 'light'], [-.23, -.30, .70, 'dark'],
-  [.11, -.43, .65, 'light'], [.62, -.39, .82, 'dark'], [.96, -.24, .62, 'light'],
-  [-.94, .22, .88, 'main'], [-.66, .33, .66, 'light'], [-.18, .20, .78, 'main'],
-  [.12, .29, .70, 'dark'], [.60, .18, 1, 'main'], [.86, .32, .77, 'light'],
+  [-.86, -.49, .46, 'cream'], [.91, -.46, .55, 'cream'],
+  [-.73, -.37, .51, 'pink'], [.82, -.32, .43, 'red'],
+  [-1.00, -.22, .60, 'red'], [.97, -.19, .58, 'pink'],
+  [-.87, -.05, .69, 'pink'], [-.69, -.04, .38, 'red'], [.75, .04, .74, 'cream'],
+  [-1.06, .07, .35, 'cream'], [1.04, .13, .61, 'cream'],
+  [-.55, .21, .83, 'cream'], [.46, .24, .74, 'red'],
+  [-.78, .29, .87, 'red'], [-.21, .31, .62, 'red'], [.82, .34, .77, 'pink'],
+  [1.06, .45, .50, 'red'], [-.47, .47, .55, 'pink'], [.23, .53, .98, 'cream'],
+  [-.66, .61, .56, 'cream'], [-.31, .68, .53, 'red'], [.58, .70, .50, 'cream'],
+  [.83, .75, .49, 'pink'], [-.07, .81, .48, 'cream'], [.40, .84, .42, 'red'],
 ];
+const giftAnchors = [];
 const stageGifts = giftPositions.map(([, , , tone], index) => {
   const button = document.createElement('button');
   button.type = 'button';
@@ -204,7 +294,7 @@ const stageGifts = giftPositions.map(([, , , tone], index) => {
   button.dataset.tone = tone;
   button.setAttribute('aria-label', '打开树下第 ' + (index + 1) + ' 个礼盒');
   button.setAttribute('aria-haspopup', 'dialog');
-  for (const part of ['gift-body', 'gift-lid']) {
+  for (const part of ['gift-face gift-front', 'gift-face gift-side', 'gift-face gift-lid']) {
     const decoration = document.createElement('span');
     decoration.className = part;
     decoration.setAttribute('aria-hidden', 'true');
@@ -261,7 +351,7 @@ const backdropCtx = backdrop.getContext('2d', { alpha: false });
 let introFinished = false;
 let visible = true, frame = 0, lastFrame = 0, elapsed = 0;
 let particleBudget = 1200, samples = 0, averageCost = 0, averageStep = 0;
-let backdropTheme, memoryNodes = [], orbitAngle = 0;
+let backdropTheme, memoryNodes = [], orbitAngle = 0, giftsInFlight = false;
 
 function setMemoryNodes(nodes) {
   memoryNodes = nodes;
@@ -288,15 +378,19 @@ function resize() {
   tall = height * (mobile ? .49 : .62);
   ground = top + tall;
   radius = Math.min(width * .40, tall * .64);
-  const boxScale = Math.max(42, Math.min(70, radius * .255));
-  const pileRadius = Math.min(radius, Math.max(0, Math.min(center, width - center) - boxScale * .45));
-  const floor = ground + (mobile ? 5 : 15);
+  const boxScale = Math.max(32, Math.min(70, radius * .238));
+  const pileRadius = Math.min(radius * .95, (Math.min(center, width - center) - boxScale * .40) / 1.06);
+  const floor = ground + (mobile ? 5 : 12);
   for (const [index, [x, depth, scale]] of giftPositions.entries()) {
     const button = stageGifts[index];
     const size = boxScale * scale;
+    const left = center + x * pileRadius;
+    const foot = floor + depth * boxScale;
     button.style.width = size + 'px';
-    button.style.left = center + x * pileRadius - size / 2 + 'px';
-    button.style.top = floor + depth * boxScale - size + 'px';
+    button.style.left = left - size / 2 + 'px';
+    button.style.top = foot - size * .91 + 'px';
+    button.style.setProperty('--gift-angle', ((index * 59) % 17 - 8) + 'deg');
+    giftAnchors[index] = [left, foot - size * .41];
   }
   drawBackdrop();
   invalidateScene();
@@ -652,6 +746,7 @@ function drawScene(t, dt) {
     ctx.fillRect(sx, sy, size, size);
   }
   ctx.globalAlpha = 1;
+  layoutGifts(t, freeAngle);
   layoutMemories(t, rotation, freeAngle, forming);
 }
 
@@ -703,10 +798,36 @@ function drawGalaxy(t, angle, energy) {
   ctx.globalAlpha = 1;
 }
 
+function layoutGifts(t, freeAngle) {
+  if (giftStage.hidden) return;
+  if (spread < .005 && !effects.scattered) {
+    if (giftsInFlight) {
+      for (const box of stageGifts) box.style.removeProperty('transform');
+      giftsInFlight = false;
+    }
+    return;
+  }
+  giftsInFlight = true;
+  for (const [i, box] of stageGifts.entries()) {
+    const [baseX, baseY] = giftAnchors[i];
+    const angle = i * 2.40 + freeAngle * .94;
+    const depth = Math.sin(angle);
+    const distance = .36 + ((i * .317) % .60);
+    const x = width * (.50 + Math.cos(angle) * .47 * distance);
+    const y = height * (.49 + ((i * .217) % .39) - .20 + depth * .15);
+    const dx = (x - baseX) * spread;
+    const dy = (y - baseY) * spread - Math.sin(spread * Math.PI) * 24;
+    const turn = Math.sin(t * .78 + i * 1.09) * spread * 67;
+    box.style.transform = 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) +
+      'px,0) rotate(' + turn.toFixed(1) + 'deg) scale(' + mix(1, .64 + depth * .19, spread).toFixed(3) + ')';
+  }
+}
+
 function layoutMemories(t, rotation, freeAngle, forming) {
   const opacity = forming ? smoothProgress((t - 1.28) / .75) : 1;
+  const levelCount = Math.max(8, memoryNodes.length - 1);
   for (const [i, card] of memoryNodes.entries()) {
-    const level = .20 + ((i * .237) % .71);
+    const level = .23 + i / levelCount * .65;
     const turn = i * 2.40 - rotation;
     const treeDepth = Math.sin(turn);
     const treeX = center + Math.cos(turn) * radius * Math.pow(level, .90) * .90;
@@ -719,17 +840,19 @@ function layoutMemories(t, rotation, freeAngle, forming) {
     const x = mix(treeX, floatX, spread);
     const y = mix(treeY, floatY, spread);
     const depth = mix(treeDepth, floatDepth, spread);
-    const scale = .74 + .22 * depth + .25 * spread;
+    const scale = .82 + .22 * depth + .30 * spread;
     card.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) +
       'px,0) translate(-50%,-50%) rotate(' + (depth * (7 + 10 * spread)).toFixed(1) +
       'deg) scale(' + scale.toFixed(3) + ')';
-    card.style.opacity = String(opacity * (.65 + .35 * Math.max(0, depth)));
+    const treeLight = .30 + .70 * smoothProgress((treeDepth + .82) / 1.28);
+    card.style.opacity = String(opacity * mix(treeLight, .72 + .28 * Math.max(0, floatDepth), spread));
     card.style.zIndex = String(Math.round(12 + depth * 10));
   }
 }
 
 function syncGiftControl() {
-  giftStage.hidden = effects.scattered || effects.gift === 'none';
+  giftStage.hidden = effects.gift === 'none';
+  giftStage.inert = effects.scattered;
   giftStage.dataset.style = effects.gift;
 }
 
@@ -1076,9 +1199,9 @@ const personalSuffix = shared.id ? '-' + shared.id : '';
 const settingsKey = 'winter-lights-settings' + personalSuffix;
 const defaultGreeting = '愿这个冬夜，有星光也有温暖。';
 const giftThemes = {
-  style: [['🧣','冬日围巾'],['🧴','暖香'],['👜','小挎包'],['💌','手写信'],['🍫','巧克力'],['💍','星光戒指'],['🕯️','香氛蜡烛'],['🧸','抱抱熊']],
+  style: [['💄','口红'],['👜','小挎包'],['👠','高跟鞋'],['🧴','香水'],['📿','项链'],['💝','护肤礼盒'],['💐','花束'],['🍷','红酒'],['🧸','抱抱熊'],['🧣','冬日围巾']],
   game: [['🎮','游戏手柄'],['🎧','耳机'],['⌨️','键盘'],['📷','相机'],['🛹','滑板'],['⚽','足球'],['👟','运动鞋'],['🧩','拼图']],
-  family: [['🐤','小黄鸭'],['🚂','玩具火车'],['🧸','玩偶'],['🎨','画笔'],['🪀','悠悠球'],['📚','故事书'],['🧤','暖手套'],['🎈','气球']],
+  family: [['🍼','奶瓶'],['🪇','摇铃'],['🐤','小黄鸭'],['🚂','玩具火车'],['🧸','玩偶'],['📚','故事书'],['🧤','暖手套'],['🎈','气球']],
 };
 const photos = [];
 let currentPhoto = -1;
@@ -1203,9 +1326,13 @@ function renderMemoryCards() {
       image.alt = '';
       button.append(image);
     } else {
-      button.textContent = entry.icon;
+      const artwork = document.createElement('span');
+      artwork.className = 'memory-art';
+      artwork.setAttribute('aria-hidden', 'true');
+      artwork.textContent = entry.icon;
+      button.append(artwork);
     }
-    button.onclick = () => showMemoryEntry(entry);
+    button.onclick = () => showMemoryEntry(entry, button.getBoundingClientRect());
     return button;
   });
   $('#floating-memories').replaceChildren(...children);
@@ -1378,15 +1505,16 @@ function nextMemory(index) {
   return null;
 }
 
-function showMemoryEntry(entry) {
+function showMemoryEntry(entry, origin) {
   if (dialog.open) return;
   setPicture(entry);
   greetingCover.hidden = true;
   dialog.showModal();
-  showPicture();
+  showPicture(origin);
 }
 
 function chooseGift(requestedGift) {
+  if (effects.scattered) return;
   const candidates = (requestedGift ? [requestedGift] : stageGifts)
     .map(button => ({ button, bounds: button.getBoundingClientRect() }))
     .filter(({ bounds }) => bounds.width && bounds.top + bounds.height * .36 > 0 &&
@@ -1417,7 +1545,7 @@ function showGiftCard(index, requestedGift) {
 
   const card = greetingCover.getBoundingClientRect();
   const left = origin.left + origin.width / 2 - card.left - card.width / 2;
-  const top = origin.top + origin.height * .36 - card.top - card.height / 2;
+  const top = origin.top + origin.height * .46 - card.top - card.height / 2;
   giftEntrance = greetingCover.animate([
     { transform: `translate(${left}px,${top}px) scale(.09) rotate(-9deg)`, opacity: 0, offset: 0 },
     { transform: `translate(${left}px,${top - 24}px) scale(.18) rotate(-8deg)`, opacity: 1, offset: .27 },
@@ -1425,16 +1553,24 @@ function showGiftCard(index, requestedGift) {
   ], { duration: 620, easing: 'cubic-bezier(.16,.72,.32,1)' });
 }
 
-function showPicture() {
+function showPicture(origin) {
   greetingCover.hidden = true;
   greetingPicture.hidden = false;
   dialog.classList.add('show-picture');
   greetingPicture.focus({ preventScroll: true });
   if (!motionPreference.matches && greetingPicture.animate) {
+    let start = { transform: 'perspective(880px) rotateY(18deg) scale(.94)', opacity: .42 };
+    if (origin) {
+      const revealed = greetingPicture.getBoundingClientRect();
+      const x = origin.left + origin.width / 2 - revealed.left - revealed.width / 2;
+      const y = origin.top + origin.height / 2 - revealed.top - revealed.height / 2;
+      const scale = origin.width / revealed.width;
+      start = { transform: `translate(${x}px,${y}px) rotate(-6deg) scale(${scale})`, opacity: .8 };
+    }
     pictureReveal = greetingPicture.animate([
-      { transform: 'perspective(880px) rotateY(18deg) scale(.94)', opacity: .42 },
+      start,
       { transform: 'perspective(880px) rotateY(0) scale(1)', opacity: 1 },
-    ], { duration: 270, easing: 'ease-out' });
+    ], { duration: origin ? 440 : 270, easing: 'cubic-bezier(.2,.72,.26,1)' });
   }
 }
 
@@ -1744,7 +1880,7 @@ shareButton.onclick = async () => {
         <button id="greeting-add" type="button">去添加照片</button>
       </div>
       <img id="large-photo" alt="">
-      <div id="large-gift" class="large-gift" hidden><span aria-hidden="true"></span><strong></strong></div>
+      <div id="large-gift" class="large-gift" hidden><div class="memory-art"><span aria-hidden="true"></span><strong></strong></div></div>
     </div>
   </div>
 </dialog>
