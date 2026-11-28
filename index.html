@@ -1745,25 +1745,28 @@ function renderBlessings() {
 
   const lanes = document.createElement('div');
   lanes.setAttribute('aria-hidden', 'true');
+  const availableBands = [0, 1, 2];
   let next = 0;
-  function launchBlessing(lane, delay) {
+  function launchBlessing(lane, band, delay) {
     const text = messages[next++ % messages.length];
+    const top = messages.length === 1 ? 25 + Math.random() * 38 : 25 + band * 15 + Math.random() * 8;
+    lane.style.top = top.toFixed(1) + '%';
     const message = document.createElement('span');
     message.className = 'blessing-message';
     message.textContent = text;
     message.style.animationDelay = delay + 's';
     message.style.animationDuration = (9 + Math.sqrt(text.length) * .74) + 's';
     message.addEventListener('animationend', () => {
-      if (lane.isConnected && effects.scattered) launchBlessing(lane, .75);
+      if (lane.isConnected && effects.scattered) launchBlessing(lane, band, .75);
     }, { once: true });
     lane.replaceChildren(message);
   }
   for (let i = 0; i < Math.min(3, messages.length); i++) {
     const lane = document.createElement('div');
     lane.className = 'blessing-lane';
-    lane.style.top = (29 + i * 13) + '%';
+    const [band] = availableBands.splice(Math.floor(Math.random() * availableBands.length), 1);
     lanes.append(lane);
-    launchBlessing(lane, i * 1.25);
+    launchBlessing(lane, band, i * 1.25);
   }
   blessingStream.append(lanes);
 }
