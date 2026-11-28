@@ -218,7 +218,7 @@ small, .hint { color: var(--muted); font-size: 12px; }
 const canvas = document.querySelector('#scene');
 const ctx = canvas.getContext('2d', { alpha: false });
 const giftStage = document.querySelector('#stage-gifts');
-const stageStatus = document.querySelector('#mode').lastChild;
+const stageStatus = document.querySelector('#mode');
 const albumDialog = document.querySelector('#album');
 const reducedSceneMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const tau = Math.PI * 2;
@@ -1297,10 +1297,11 @@ function drawWorld() {
 }
 
 function drawScene(t, dt) {
-  if (t >= formationTime || effects.scattered || reducedSceneMotion.matches) introFinished = true;
+  if (!introFinished && (t >= formationTime || effects.scattered || reducedSceneMotion.matches)) {
+    introFinished = true;
+    stageStatus.hidden = true;
+  }
   const forming = !introFinished;
-  const status = forming ? '星光汇聚中' : effects.scattered ? '粒子已散开' : '粒子已汇聚';
-  if (stageStatus.textContent !== status) stageStatus.textContent = status;
   spread = mix(spread, Number(effects.scattered), 1 - Math.exp(-dt * 3.1));
   orbitAngle = mix(orbitAngle, effects.orbit, 1 - Math.exp(-dt * 7));
   if (!albumDialog.open && !reducedSceneMotion.matches && !document.activeElement?.matches('.stage-gift, .memory-token')) {
