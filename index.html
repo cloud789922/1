@@ -43,18 +43,19 @@ h1{margin:12px 0 4px;font-family:"Songti SC","SimSun",Georgia,serif;font-size:cl
 .stage-actions svg{width:17px;height:17px}
 .camera-box{position:absolute;left:20px;bottom:21px;width:min(25%,160px);aspect-ratio:4/3;overflow:hidden;border-radius:12px;border:1px solid #718674;background:#000}
 .camera-box video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.stage-gifts{--gift-front:#ba4746;--gift-edge:#682c34;--gift-top:#db7470;--ribbon:#f8d88b;position:absolute;inset:0;pointer-events:none}
-.stage-gifts[data-style=ice]{--gift-front:#487da4;--gift-edge:#2a4964;--gift-top:#77acd0;--ribbon:#d9f2fa}
-.stage-gifts[data-style=pink]{--gift-front:#a74973;--gift-edge:#5c2947;--gift-top:#d8799f;--ribbon:#f6d0dc}
-.stage-gift{--wrap-light:1;position:absolute;aspect-ratio:1;min-height:0;padding:0;border:0;background:transparent;overflow:visible;pointer-events:auto;filter:brightness(var(--wrap-light))}
-.stage-gift[data-tone=dark]{--wrap-light:.78}
-.stage-gift[data-tone=light]{--wrap-light:1.14}
-.stage-gift:hover,.stage-gift:focus-visible,.stage-gift.is-open{z-index:1;background:transparent;filter:brightness(1.25)}
-.stage-gift:hover::before,.stage-gift:focus-visible::before,.stage-gift.is-open::before{content:"";position:absolute;inset:0 -26% -14%;background:radial-gradient(ellipse,#efba6266,transparent 72%);pointer-events:none}
-.gift-body,.gift-lid{display:block;position:absolute;left:5%;border:1px solid var(--gift-edge);border-radius:3px;background:linear-gradient(90deg,transparent 43%,var(--ribbon) 43% 57%,transparent 57%),linear-gradient(90deg,var(--gift-front) 82%,var(--gift-edge) 82%);box-shadow:0 2px 8px #0008}
-.gift-body{top:38%;width:90%;height:55%}
-.gift-lid{top:28%;left:0;width:100%;height:22%;background-color:var(--gift-top);background-image:linear-gradient(90deg,transparent 43%,var(--ribbon) 43% 57%,transparent 57%);transform-origin:83% 70%;transition:transform .33s cubic-bezier(.19,.82,.31,1)}
-.gift-lid::before,.gift-lid::after{content:"";position:absolute;bottom:100%;width:25%;height:76%;border:2px solid var(--ribbon);border-radius:85% 80% 10% 70%;right:49%;transform:rotate(19deg);transform-origin:100% 100%}
+.stage-gifts{--gift-front:#77423b;--gift-edge:#392725;--gift-top:#a16b52;--ribbon:#bca071;position:absolute;inset:0;pointer-events:none}
+.stage-gifts[data-style=ice]{--gift-front:#395766;--gift-edge:#253941;--gift-top:#67858b;--ribbon:#adbdaf}
+.stage-gifts[data-style=pink]{--gift-front:#754959;--gift-edge:#3b2b34;--gift-top:#9d6b75;--ribbon:#bfa499}
+.stage-gift{--wrap-light:1;position:absolute;aspect-ratio:1;min-height:0;padding:0;border:0;background:transparent;overflow:visible;pointer-events:auto;isolation:isolate;filter:brightness(var(--wrap-light))}
+.stage-gift[data-tone=dark]{--wrap-light:.79}
+.stage-gift[data-tone=light]{--wrap-light:1.08}
+.stage-gifts[data-style=classic] .stage-gift[data-tone=dark]{--gift-front:#345446;--gift-edge:#22372e;--gift-top:#637351}
+.stage-gift::before{content:"";position:absolute;z-index:-1;left:-17%;right:-15%;top:77%;bottom:-9%;background:radial-gradient(ellipse,#020908d8 12%,#050e0c92 46%,transparent 73%);pointer-events:none}
+.stage-gift:hover,.stage-gift:focus-visible,.stage-gift.is-open{z-index:1;background:transparent;filter:brightness(calc(var(--wrap-light) + .15))}
+.gift-body,.gift-lid{display:block;position:absolute;border-radius:2px;box-shadow:inset 0 1px 0 #e3c68d26}
+.gift-body{left:5%;top:35%;width:90%;height:53%;border:1px solid var(--gift-edge);background:linear-gradient(165deg,#efd79722,transparent 46%,#101c1b44 85%),linear-gradient(90deg,transparent 41%,var(--ribbon) 42% 52%,transparent 53%),linear-gradient(90deg,var(--gift-front) 79%,var(--gift-edge) 81%)}
+.gift-lid{top:26%;left:1%;width:98%;height:20%;border:1px solid var(--gift-edge);background:linear-gradient(165deg,#f3d09044,transparent 40%,#1b1e184d 83%),linear-gradient(90deg,transparent 42%,var(--ribbon) 43% 53%,transparent 54%),linear-gradient(90deg,var(--gift-top) 79%,var(--gift-front) 81%);transform-origin:83% 70%;transition:transform .33s cubic-bezier(.19,.82,.31,1)}
+.gift-lid::before,.gift-lid::after{content:"";position:absolute;bottom:100%;width:21%;height:72%;border:1.5px solid var(--ribbon);border-radius:85% 80% 10% 70%;right:51%;transform:rotate(19deg);transform-origin:100% 100%}
 .gift-lid::after{right:auto;left:49%;transform:scaleX(-1) rotate(19deg);transform-origin:0 100%}
 .stage-gift.is-open .gift-lid{transform:translate(14%,-150%) rotate(22deg)}
 .sidebar{display:grid;gap:14px}
@@ -133,10 +134,10 @@ const palettes = {
 const introPalette = ['#c6a266', '#e8bf76', '#ffe6aa', '#fff0c9', '#dbb679', '#fff9de'];
 // Horizontal offset from the trunk, floor depth, scale, wrapping tone.
 const giftPositions = [
-  [-.95, -.45, .68, 'dark'], [-.65, -.58, .81, 'light'], [-.21, -.45, .72, 'dark'],
-  [.10, -.56, .68, 'light'], [.66, -.55, .86, 'dark'], [.98, -.42, .67, 'light'],
-  [-.90, .12, .96, 'main'], [-.60, .27, .72, 'light'], [-.15, .25, .83, 'main'],
-  [.15, .20, .74, 'dark'], [.61, .18, 1, 'main'], [.93, .27, .82, 'light'],
+  [-.88, -.25, .65, 'dark'], [-.63, -.37, .78, 'light'], [-.23, -.30, .70, 'dark'],
+  [.11, -.43, .65, 'light'], [.62, -.39, .82, 'dark'], [.96, -.24, .62, 'light'],
+  [-.94, .22, .88, 'main'], [-.66, .33, .66, 'light'], [-.18, .20, .78, 'main'],
+  [.12, .29, .70, 'dark'], [.60, .18, 1, 'main'], [.86, .32, .77, 'light'],
 ];
 const stageGifts = giftPositions.map(([, , , tone], index) => {
   const button = document.createElement('button');
@@ -216,9 +217,9 @@ function resize() {
   tall = height * .56;
   ground = top + tall;
   radius = Math.min(width * .40, tall * .64);
-  const boxScale = Math.max(48, Math.min(80, radius * .275));
+  const boxScale = Math.max(42, Math.min(70, radius * .255));
   const pileRadius = Math.min(radius, Math.max(0, Math.min(center, width - center) - boxScale * .45));
-  const floor = ground + (mobile ? 3 : 12);
+  const floor = ground + (mobile ? 5 : 15);
   for (const [index, [x, depth, scale]] of giftPositions.entries()) {
     const button = stageGifts[index];
     const size = boxScale * scale;
