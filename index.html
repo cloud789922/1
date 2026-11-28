@@ -230,7 +230,7 @@ const stageGifts = giftModels.map((_, index) => {
   return button;
 });
 const effects = { scattered: false, density: 3000, palette: 'pine', color: '#8fe8af', shape: 'glow', gift: 'classic', energy: 0, scenery: 'forest', orbit: 0 };
-let width, height, center, ground, radius, worldScale, mobile;
+let width, height, center, ground, worldScale, mobile;
 let spread = 0;
 const random = (max = 1) => Math.random() * max;
 const mix = (a, b, t) => a + (b - a) * t;
@@ -249,9 +249,9 @@ const particles = Array.from({ length: maxParticles }, (_, i) => {
   };
 });
 const stars = Array.from({length: 195}, () => [random(), random(), random(1.5) + .25, random()]);
-const snow = Array.from({length: 82}, () => [random(), random(), random(1.7) + .3, random()]);
+const snow = Array.from({length: 96}, () => [random(), random(), random(1.7) + .3, random()]);
 const winterThemes = {
-  forest: [['#06132d','#203f73','#122848'], ['#1c3864','#09152d'], '#101c36', '#fff0c9'],
+  forest: [['#050c23','#2a4c80','#1d3763'], ['#1b315b','#101c3c'], '#122347', '#f3f3df'],
   cabin: [['#110e27','#563b61','#2e294a'], ['#314264','#11182e'], '#20233e', '#ffe4ae'],
   aurora: [['#060e28','#163f57','#212e55'], ['#1e3d62','#0b1933'], '#111c38', '#e1eee7'],
   dawn: [['#222648','#b47788','#696d9a'], ['#4b5d87','#142840'], '#374361', '#fff0c6'],
@@ -303,172 +303,277 @@ function resize() {
   center = width * (mobile ? .51 : .535);
   ground = height * (mobile ? .74 : .765);
   worldScale = Math.min(height * (mobile ? .45 : .55) / treeHeight, width / 5.6);
-  radius = worldScale * 2.3;
   drawBackdrop();
   invalidateScene();
 }
 
+
 function drawBackdrop() {
   backdrop.width = canvas.width;
   backdrop.height = canvas.height;
-  backdropCtx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+  backdropCtx.setTransform(backdrop.width / width, 0, 0, backdrop.height / height, 0, 0);
   backdropTheme = effects.scenery;
   drawWinterLandscape(backdropCtx);
-  for (const [x, y, size, brightness] of stars) {
-    backdropCtx.globalAlpha = .17 + .61 * brightness;
-    backdropCtx.fillStyle = size > 1.35 ? '#f5dcaa' : '#c5ddff';
-    backdropCtx.fillRect(x * width, y * height * .54, size, size);
+}
+
+function softPatch(paint, x, y, wide, high, color, opacity, angle = 0) {
+  paint.save();
+  paint.translate(x, y);
+  paint.rotate(angle);
+  paint.scale(wide, high);
+  const gradient = paint.createRadialGradient(0, 0, 0, 0, 0, 1);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(.46, color + '60');
+  gradient.addColorStop(1, color + '00');
+  paint.fillStyle = gradient;
+  paint.globalAlpha = opacity;
+  paint.fillRect(-1, -1, 2, 2);
+  paint.restore();
+}
+
+function snowHill(paint, y, amplitude, phase, fill) {
+  paint.beginPath();
+  for (let i = 0; i <= 64; i++) {
+    const x = i / 64;
+    const wave = Math.sin(x * 13 + phase) * .66 + Math.sin(x * 29 - phase) * .21;
+    paint.lineTo(x * width, y + wave * amplitude);
   }
-  const floor = backdropCtx.createRadialGradient(center, ground + 4, 0, center, ground + 4, radius * 1.15);
-  floor.addColorStop(0, '#6f8bc385');
-  floor.addColorStop(1, '#6f8bc300');
-  backdropCtx.globalAlpha = .73;
-  backdropCtx.fillStyle = floor;
-  backdropCtx.fillRect(0, 0, width, height);
-  backdropCtx.globalAlpha = 1;
+  paint.lineTo(width, height);
+  paint.lineTo(0, height);
+  paint.closePath();
+  paint.fillStyle = fill;
+  paint.fill();
 }
 
 function drawWinterLandscape(paint) {
   const [[zenith, horizon, lowerSky], [snowLight, snowDark], mountains, moonColor] = winterThemes[effects.scenery] || winterThemes.forest;
-  const ridge = height * .49;
-  const sky = paint.createLinearGradient(0, 0, 0, ridge * 1.16);
+  const ridge = height * .457;
+  const lightSnow = effects.scenery === 'dawn';
+  const sky = paint.createLinearGradient(0, 0, 0, ridge * 1.17);
   sky.addColorStop(0, zenith);
-  sky.addColorStop(.79, horizon);
+  sky.addColorStop(.81, horizon);
   sky.addColorStop(1, lowerSky);
   paint.fillStyle = sky;
   paint.fillRect(0, 0, width, height);
+  softPatch(paint, width * .81, ridge * .85, width * .44, ridge * .69, lightSnow ? '#e9afb0' : '#698dcc', .18);
 
-  if (effects.scenery === 'aurora') {
-    for (let band = 0; band < 5; band++) {
-      paint.beginPath();
-      paint.moveTo(width * -.05, ridge * (.52 + band * .035));
-      paint.bezierCurveTo(width * .23, ridge * .02, width * .62, ridge * (.82 + band * .018), width * 1.04, ridge * .04);
-      paint.globalAlpha = .21 - band * .027;
-      paint.strokeStyle = band % 2 ? '#70e3c7' : '#97c1ee';
-      paint.lineWidth = 2 + band * 9;
-      paint.stroke();
+  for (const [x, y, size, brightness] of stars) {
+    const sx = x * width, sy = y * ridge;
+    paint.globalAlpha = (.19 + .62 * brightness) * (lightSnow ? .54 : 1);
+    paint.fillStyle = x < .44 ? '#d2e1ff' : '#ffeddd';
+    paint.beginPath();
+    paint.arc(sx, sy, size * .58, 0, tau);
+    paint.fill();
+    if (size > 1.48 && brightness > .83) softPatch(paint, sx, sy, 6, 6, '#dbe8ff', .34);
+  }
+  paint.globalAlpha = 1;
+
+  if (effects.scenery === 'aurora') drawAurora(paint, ridge);
+  drawWinterMoon(paint, moonColor, lightSnow);
+
+  const haze = paint.createLinearGradient(0, ridge * .91, 0, height * .70);
+  haze.addColorStop(0, mountains);
+  haze.addColorStop(1, '#192c52');
+  snowHill(paint, ridge - height * .01, height * .026, .05, haze);
+  const terrain = paint.createLinearGradient(0, ridge, width * .16, height);
+  terrain.addColorStop(0, snowDark);
+  terrain.addColorStop(.49, snowLight);
+  terrain.addColorStop(1, snowDark);
+  snowHill(paint, ridge + height * .045, height * .040, .84, terrain);
+  const foreground = paint.createLinearGradient(0, height * .60, 0, height);
+  foreground.addColorStop(0, '#607bac0f');
+  foreground.addColorStop(.56, '#708bb40c');
+  foreground.addColorStop(1, '#030d2d32');
+  snowHill(paint, height * .665, height * .060, 2.42, foreground);
+
+  for (const [i, [x, y, extent]] of snowbanks.entries()) {
+    const px = width * x;
+    const py = ridge + y * height * .53;
+    const span = Math.max(8, height * (.017 + extent * .057));
+    const color = lightSnow ? '#eac9e8' : i % 3 ? '#8ac5e6' : '#a6bddf';
+    softPatch(paint, px + span * .21, py + span * .059, span * 1.22, span * .22, '#061633', .21, -.10);
+    softPatch(paint, px, py, span, span * .19, color, (.16 + extent * .17) * (i % 4 ? 1 : .68), -.10);
+    for (let j = 0; j < 4; j++) {
+      const dx = ((i * .27 + j * .31) % 1 - .5) * span * 1.6;
+      const dy = ((i * .77 + j * .37) % 1 - .5) * span * .35;
+      const size = .4 + ((i * .39 + j * .49) % 1) * 1.02;
+      paint.fillStyle = '#dfeeff';
+      paint.globalAlpha = .19 + size * .29;
+      paint.fillRect(px + dx, py + dy, size, size);
+      if (size > 1.12) softPatch(paint, px + dx, py + dy, size * 4.3, size * 3.8, color, .27);
     }
-    paint.globalAlpha = 1;
   }
+  paint.globalAlpha = 1;
 
-  const moonX = width * (mobile ? .81 : .77);
-  const moonY = height * (mobile ? .24 : .19);
-  const moonSize = Math.max(12,Math.min(29,height * .036));
-  const moonGlow = paint.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonSize * 4);
-  moonGlow.addColorStop(0, '#ffebbcaa');
-  moonGlow.addColorStop(.32, '#c5d7ff54');
-  moonGlow.addColorStop(1, '#b7c9ff00');
-  paint.fillStyle = moonGlow;
-  paint.fillRect(moonX - moonSize * 4, moonY - moonSize * 4, moonSize * 8, moonSize * 8);
-  paint.fillStyle = moonColor;
-  paint.beginPath();
-  paint.arc(moonX, moonY, moonSize * .74, 0, tau);
-  paint.fill();
-
-  paint.fillStyle = mountains;
-  paint.beginPath();
-  paint.moveTo(0, height);
-  for (let i = 0; i <= 34; i++) {
-    const x = i / 34;
-    const y = ridge + Math.sin(x * 14 + 2) * height * .039 - Math.abs(Math.sin(x * 29 + .7)) * height * .053;
-    paint.lineTo(x * width, y);
-  }
-  paint.lineTo(width, height);
-  paint.fill();
-  const snowGround = paint.createLinearGradient(0, ridge * .97, 0, height);
-  snowGround.addColorStop(0, snowDark);
-  snowGround.addColorStop(.36, snowLight);
-  snowGround.addColorStop(1, snowDark);
-  paint.fillStyle = snowGround;
-  paint.beginPath();
-  paint.moveTo(0, ridge);
-  paint.bezierCurveTo(width * .24, ridge * .87, width * .42, ridge * 1.16, width * .65, ridge);
-  paint.bezierCurveTo(width * .82, ridge * .85, width * .97, ridge * 1.03, width, ridge);
-  paint.lineTo(width, height);
-  paint.lineTo(0, height);
-  paint.fill();
-
-  for (let bank = 0; bank < 20; bank++) {
-    const x = ((bank * .273 + .16) % 1) * width;
-    const y = ridge + (((bank * .79 + .13) % 1) * .43) * height;
-    const size = height * (.014 + ((bank * .153) % 1) * .042);
-    paint.save();
-    paint.translate(x, y);
-    paint.scale(1, .23);
-    const reflection = paint.createRadialGradient(0, 0, 0, 0, 0, size);
-    reflection.addColorStop(0, '#b9d6ff48');
-    reflection.addColorStop(1, '#b9d6ff00');
-    paint.fillStyle = reflection;
-    paint.fillRect(-size, -size, 2 * size, 2 * size);
-    paint.restore();
-  }
-  for (let i = 0; i < 30; i++) {
-    const x = ((i * .197 + .025) % 1);
-    const depth = (i * .381) % 1;
-    if (x > .35 && x < .68 && depth > .14) continue;
-    const size = height * (.028 + depth * .122);
-    const foot = ridge + height * (.001 + depth * .27);
+  for (const [x, depth, scale] of forestTrees) {
+    const foot = ridge + height * (.006 + depth * .268);
+    const size = height * (.037 + depth * .157) * scale;
     drawPine(paint, x * width, foot, size, depth);
   }
-  if (effects.scenery === 'cabin') drawCabin(paint, width * (mobile ? .13 : .24), ridge + height * .21, height * (mobile ? .088 : .129));
+  if (effects.scenery === 'cabin') {
+    drawCabin(paint, width * (mobile ? .15 : .22), ridge + height * .232, height * (mobile ? .085 : .139));
+  }
+
+  const vignette = paint.createRadialGradient(width * .52, height * .51, width * .19, width * .52, height * .51, Math.hypot(width, height) * .67);
+  vignette.addColorStop(0, '#01071b00');
+  vignette.addColorStop(1, lightSnow ? '#100d2b30' : '#01071b9a');
+  paint.fillStyle = vignette;
+  paint.fillRect(0, 0, width, height);
+}
+
+const snowbanks = Array.from({ length: 32 }, (_, i) => [
+  (i * .618 + .034) % 1, .11 + (i * .391 % 1) * .86, (i * .685 + .39) % 1,
+]);
+
+// Sparse silhouettes at the horizon, then larger groves on the sides.
+const forestTrees = [
+  [.04,.02,.72], [.09,.12,.76], [.14,.028,.9], [.16,.12,1.02], [.18,.09,.70],
+  [.22,.025,.65], [.27,.08,.71], [.30,.19,1.21], [.34,.19,1.43], [.36,.23,1.05],
+  [.40,.035,.76], [.44,.09,1.05], [.49,.023,.95], [.54,.075,.86], [.58,.015,.76],
+  [.63,.09,.84], [.66,.032,.65], [.71,.15,1.03], [.76,.16,1.29], [.79,.02,.90],
+  [.83,.13,.81], [.86,.05,.77], [.89,.10,.89], [.93,.13,1.08], [.97,.04,.71],
+  [.32,.45,1.13], [.75,.51,1.21], [.81,.43,.71], [.92,.59,1.31], [-.015,.61,1.28],
+].sort((a, b) => a[1] - b[1]);
+
+function drawWinterMoon(paint, moonColor, dawn) {
+  const x = width * (mobile ? .81 : .74);
+  const y = height * (mobile ? .24 : .141);
+  const radius = Math.max(11, Math.min(24, height * .030));
+  softPatch(paint, x, y, radius * 4.3, radius * 4.3, '#adccf9', .27);
+  softPatch(paint, x, y, radius * 2.3, radius * 2.3, '#e8efff', dawn ? .32 : .52);
+  paint.save();
+  paint.beginPath();
+  paint.arc(x, y, radius, 0, tau);
+  const disk = paint.createRadialGradient(x - radius * .38, y - radius * .44, 0, x, y, radius * 1.09);
+  disk.addColorStop(0, '#ffffee');
+  disk.addColorStop(.78, moonColor);
+  disk.addColorStop(1, dawn ? '#e6bbaa' : '#c3d1d9');
+  paint.fillStyle = disk;
+  paint.fill();
+  paint.clip();
+  softPatch(paint, x + radius * .27, y - radius * .09, radius * .58, radius * .29, '#9ca9bd', .23, -.45);
+  softPatch(paint, x - radius * .19, y + radius * .30, radius * .37, radius * .49, '#9ca9bd', .19, -.30);
+  paint.restore();
+}
+
+function drawAurora(paint, ridge) {
+  const ribbon = paint.createLinearGradient(0, ridge * .13, 0, ridge * .80);
+  ribbon.addColorStop(0, '#9dccfb00');
+  ribbon.addColorStop(.53, '#83dbdd27');
+  ribbon.addColorStop(1, '#82f4c88a');
+  for (let band = 0; band < 3; band++) {
+    const y = ridge * (.47 + band * .09);
+    paint.beginPath();
+    paint.moveTo(-.04 * width, y);
+    paint.bezierCurveTo(.22 * width, y - .57 * ridge, .54 * width, y + .31 * ridge, 1.07 * width, y - .24 * ridge);
+    paint.bezierCurveTo(.57 * width, y + .48 * ridge, .22 * width, y - .37 * ridge, -.04 * width, y + .20 * ridge);
+    paint.closePath();
+    paint.globalAlpha = .64 - band * .17;
+    paint.fillStyle = ribbon;
+    paint.fill();
+  }
+  paint.globalAlpha = 1;
 }
 
 function drawPine(paint, x, foot, size, depth) {
-  const shade = depth > .55 ? '#081326' : '#11223c';
-  const shadowWidth = size * .51;
-  paint.globalAlpha = .24 + depth * .30;
-  paint.fillStyle = '#071124';
-  paint.beginPath();
-  paint.ellipse(x + size * .12, foot, shadowWidth, size * .085, 0, 0, tau);
-  paint.fill();
-  paint.globalAlpha = 1;
-  for (let layer = 2; layer >= 0; layer--) {
-    const peak = foot - size + layer * size * .21;
-    const bottom = peak + size * (.43 + layer * .035);
-    const half = size * (.12 + layer * .082);
-    paint.fillStyle = shade;
+  softPatch(paint, x + size * .24, foot + size * .020, size * .63, size * .085, '#050c21', .32 + depth * .32, -.065);
+  paint.fillStyle = '#10172a';
+  paint.fillRect(x - size * .025, foot - size * .21, size * .061, size * .224);
+  const layerFill = paint.createLinearGradient(x - size * .32, 0, x + size * .32, 0);
+  layerFill.addColorStop(0, depth < .17 ? '#192847' : '#14233f');
+  layerFill.addColorStop(.49, '#101b35');
+  layerFill.addColorStop(1, '#060e22');
+  for (let layer = 3; layer >= 0; layer--) {
+    const peak = foot - size + layer * size * .177;
+    const bottom = peak + size * (.39 + layer * .023);
+    const half = size * (.102 + layer * .061);
     paint.beginPath();
-    paint.moveTo(x, peak);
-    paint.lineTo(x + half * .87, bottom - size * .036);
-    paint.lineTo(x + half, bottom);
-    paint.quadraticCurveTo(x + half * .17, bottom + size * .062, x - half, bottom);
-    paint.lineTo(x - half * .83, bottom - size * .052);
-    paint.closePath();
+    paint.moveTo(x - half * .09, peak);
+    paint.bezierCurveTo(x + half * .31, bottom - size * .20, x + half * .68, bottom - size * .054, x + half, bottom);
+    paint.quadraticCurveTo(x + half * .27, bottom + size * .078, x - half, bottom + size * .005);
+    paint.quadraticCurveTo(x - half * .57, bottom - size * .085, x - half * .09, peak);
+    paint.fillStyle = layerFill;
     paint.fill();
-    paint.strokeStyle = '#9eb8dc55';
-    paint.lineWidth = Math.max(1, size * .025);
+
     paint.beginPath();
-    paint.moveTo(x - half * .81, bottom - size * .046);
-    paint.quadraticCurveTo(x - half * .15, bottom + size * .001, x + half * .54, bottom - size * .004);
-    paint.stroke();
+    paint.moveTo(x - half * .87, bottom - size * .021);
+    paint.quadraticCurveTo(x - half * .09, bottom + size * .019, x + half * .74, bottom - size * .014);
+    paint.quadraticCurveTo(x + half * .21, bottom + size * .041, x - half * .92, bottom + size * .005);
+    paint.closePath();
+    const snowColor = paint.createLinearGradient(x - half, 0, x + half, 0);
+    snowColor.addColorStop(0, '#8fabd367');
+    snowColor.addColorStop(.43, '#607fae59');
+    snowColor.addColorStop(1, '#3c5d9120');
+    paint.fillStyle = snowColor;
+    paint.fill();
   }
 }
 
 function drawCabin(paint, x, y, size) {
-  const glow = paint.createRadialGradient(x, y - size * .34, 0, x, y - size * .34, size * 1.15);
-  glow.addColorStop(0, '#ffbb596e');
-  glow.addColorStop(1, '#ffbb5900');
-  paint.fillStyle = glow;
-  paint.fillRect(x - size * 1.3, y - size * 1.45, size * 2.6, size * 2.3);
-  paint.fillStyle = '#624342';
-  paint.fillRect(x - size * .55, y - size * .51, size * 1.10, size * .51);
-  paint.fillStyle = '#22354c';
+  softPatch(paint, x + size * .15, y + size * .09, size * 1.19, size * .22, '#ffaf61', .30, -.06);
+  softPatch(paint, x, y - size * .35, size * 1.16, size * 1.10, '#ffb86e', .21);
+  paint.save();
+  paint.translate(x, y);
+  paint.scale(size, size);
+  const walls = paint.createLinearGradient(-.56, 0, .53, 0);
+  walls.addColorStop(0, '#4c2b33');
+  walls.addColorStop(.58, '#9e603b');
+  walls.addColorStop(1, '#603b35');
+  paint.fillStyle = walls;
+  paint.fillRect(-.55, -.54, 1.04, .55);
   paint.beginPath();
-  paint.moveTo(x - size * .69, y - size * .49);
-  paint.lineTo(x - size * .03, y - size * .91);
-  paint.lineTo(x + size * .68, y - size * .49);
+  paint.moveTo(.49, -.54);
+  paint.lineTo(.75, -.63);
+  paint.lineTo(.75, -.105);
+  paint.lineTo(.49, .01);
   paint.closePath();
+  paint.fillStyle = '#4f333b';
   paint.fill();
-  paint.strokeStyle = '#bdcde0';
-  paint.lineWidth = 2.8;
+  for (let plank = 0; plank < 8; plank++) {
+    paint.fillStyle = '#211e2a40';
+    paint.fillRect(-.55, -.51 + plank * .069, 1.04, .010);
+  }
+  paint.beginPath();
+  paint.moveTo(-.70, -.51);
+  paint.lineTo(-.033, -.991);
+  paint.lineTo(.29, -1.012);
+  paint.lineTo(.82, -.663);
+  paint.lineTo(.58, -.49);
+  paint.closePath();
+  const roof = paint.createLinearGradient(0, -.99, 0, -.49);
+  roof.addColorStop(0, '#718daf');
+  roof.addColorStop(.40, '#526784');
+  roof.addColorStop(1, '#293c59');
+  paint.fillStyle = roof;
+  paint.fill();
+  paint.beginPath();
+  paint.moveTo(-.70, -.51);
+  paint.lineTo(-.033, -.991);
+  paint.lineTo(.58, -.49);
+  paint.closePath();
+  paint.fillStyle = '#432f3b';
+  paint.fill();
+  paint.beginPath();
+  paint.moveTo(-.70, -.51);
+  paint.lineTo(-.033, -.991);
+  paint.lineTo(.58, -.49);
+  paint.lineTo(.82, -.663);
+  paint.strokeStyle = '#bccde1';
+  paint.lineWidth = .036;
+  paint.lineJoin = 'round';
   paint.stroke();
-  paint.fillStyle = '#ffcf81';
-  paint.fillRect(x - size * .37, y - size * .35, size * .20, size * .15);
-  paint.fillRect(x + size * .17, y - size * .35, size * .20, size * .15);
-  paint.fillStyle = '#302c35';
-  paint.fillRect(x - size * .07, y - size * .30, size * .14, size * .30);
+  paint.fillStyle = '#392c3b';
+  paint.fillRect(.10, -.34, .19, .35);
+  for (const wx of [-.38,-.11]) {
+    softPatch(paint, wx + .09, -.28, .30, .37, '#ffb759', .53);
+    paint.fillStyle = '#ffe2a6';
+    paint.fillRect(wx, -.38, .18, .20);
+    paint.fillStyle = '#735447';
+    paint.fillRect(wx + .085, -.38, .013, .20);
+    paint.fillRect(wx, -.29, .18, .012);
+  }
+  paint.restore();
 }
-
 function starPath(x, y, r, arms = 4, inner = .24) {
   ctx.beginPath();
   for (let i = 0; i < arms * 2; i++) {
@@ -535,33 +640,6 @@ function queueLight(point, color, size, opacity, bloom = false, shape = 'glow') 
   worldItems.push({ depth: point.depth, point, color, size, opacity, bloom, shape });
 }
 
-function drawPlatform() {
-  const rim = [];
-  const lip = [];
-  for (let i = 0; i < 72; i++) {
-    const angle = i / 72 * tau;
-    const x = Math.cos(angle) * 2.30;
-    const z = Math.sin(angle) * 2.30;
-    rim.push(project(x, -.035, z));
-    lip.push(project(x, -.15, z));
-  }
-  const gradient = ctx.createLinearGradient(0, ground - worldScale * .47, 0, ground + worldScale * .58);
-  gradient.addColorStop(0, '#243854');
-  gradient.addColorStop(.64, '#233557');
-  gradient.addColorStop(1, '#152746');
-  ctx.globalAlpha = .89;
-  polygon(lip);
-  ctx.fillStyle = '#050d20';
-  ctx.fill();
-  polygon(rim);
-  ctx.fillStyle = gradient;
-  ctx.fill();
-  ctx.strokeStyle = '#7894b250';
-  ctx.lineWidth = .9;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-}
-
 const foliage = Array.from({ length: 10 }, (_, tier) => {
   const base = .10 + tier * .489;
   const width = treeRadius * ((treeHeight - base) / treeHeight) ** .92;
@@ -602,6 +680,18 @@ const ambientLights = Array.from({ length: 61 }, (_, i) => {
 const roseHalo = makeHalo('#ff829d');
 const iceHalo = makeHalo('#a8e1ff');
 const whiteHalo = makeHalo('#fffaf0');
+const groundShade = makeHalo('#040b20');
+
+function drawSnowContact() {
+  const focus = smoothProgress(1 - spread);
+  if (focus < .025) return;
+  const x = center, y = ground;
+  ctx.globalAlpha = focus * .68;
+  ctx.drawImage(groundShade, x - worldScale * 1.64, y - worldScale * .27, worldScale * 3.28, worldScale * .61);
+  ctx.globalAlpha = focus * .16;
+  ctx.drawImage(warmHalo, x - worldScale * 1.72, y - worldScale * .14, worldScale * 3.15, worldScale * .66);
+  ctx.globalAlpha = 1;
+}
 
 function addGarland(t, forming, energy) {
   const count = 236;
@@ -769,11 +859,10 @@ function addGifts(t, dt) {
     paintBox(lidPose, halfX * 1.06, halfZ * 1.06, -.025, high * .17, paper, true);
     if (spread < .65) {
       const foot = project(x, -.01, z);
-      ctx.globalAlpha = (1 - spread) * .49;
-      ctx.beginPath();
-      ctx.ellipse(foot.x + 1, foot.y + 1, (halfX + halfZ) * foot.scale * .78, high * foot.scale * .24, 0, 0, tau);
-      ctx.fillStyle = '#090b1c';
-      ctx.fill();
+      const shadowX = (halfX + halfZ) * foot.scale * .90;
+      const shadowY = high * foot.scale * .34;
+      ctx.globalAlpha = (1 - spread) * .80;
+      ctx.drawImage(groundShade, foot.x - shadowX + 2, foot.y - shadowY + 1, shadowX * 2, shadowY * 2);
       ctx.globalAlpha = 1;
     }
     if (lift > .02) queueLight(pose(0, high, 0), '#ffe9aa', high * .16 * worldScale, lift, true, 'star');
@@ -923,7 +1012,9 @@ function drawScene(t, dt) {
   galaxyWidth = Math.max(1, Math.min(2.8, width / (worldScale * 5.5)));
   if (backdropTheme !== effects.scenery) drawBackdrop();
   ctx.drawImage(backdrop, 0, 0, width, height);
-  drawPlatform();
+  drawSnowContact();
+  const trunk = (1 - spread) * (forming ? smoothProgress((t - .76) / 1.48) : 1);
+  if (trunk > .025) paintBox(worldPose(0, 0, 0, .37), .103, .095, 0, .46, '#564637', false, trunk);
   addFoliage(t, forming);
   addParticles(t, forming, effects.energy);
   addGarland(t, forming, effects.energy);
@@ -932,11 +1023,18 @@ function drawScene(t, dt) {
   addStar(t, forming);
   drawWorld();
   ctx.fillStyle = '#eef3f5';
-  for (const [x, y, size, speed] of snow) {
+  for (const [index, [x, y, size, speed]] of snow.entries()) {
     ctx.globalAlpha = .16 + speed * .46;
     const sx = (x * width + Math.sin(t * .25 + y * 20) * 19 + width) % width;
     const sy = (y * height + t * (8 + speed * 19)) % height;
-    ctx.fillRect(sx, sy, size, size);
+    if (index % 14 === 0) {
+      const radius = 3 + speed * 5;
+      ctx.drawImage(iceHalo, sx - radius, sy - radius, radius * 2, radius * 2);
+    } else {
+      ctx.beginPath();
+      ctx.arc(sx, sy, size * .52, 0, tau);
+      ctx.fill();
+    }
   }
   ctx.globalAlpha = 1;
 }
