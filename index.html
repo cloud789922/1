@@ -945,87 +945,12 @@ function setupCamera(onGesture, onPosition) {
   window.addEventListener('pagehide', () => stop());
 }
 
-const carols = {
-  jingle: { beat: .288, measure: 4, chords: [48,48,48,48,53,48,55,55,48,48,48,48,53,48,55,48], notes: [
-    [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
-    [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[74,1],[74,1],[76,1],[74,2],[79,2],
-    [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
-    [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[79,1],[79,1],[77,1],[74,1],[72,4],
-  ] },
-  silent: { beat: .52, measure: 3, chords: [48,48,55,48,53,48,53,48,55,48,48,48], notes: [
-    [79,1.5],[81,.5],[79,1],[76,3],[79,1.5],[81,.5],[79,1],[76,3],
-    [86,2],[86,1],[83,3],[84,2],[84,1],[79,3],
-    [81,2],[81,1],[84,1.5],[83,.5],[81,1],[79,1.5],[81,.5],[79,1],[76,3],
-    [81,2],[81,1],[84,1.5],[83,.5],[81,1],[79,1.5],[81,.5],[79,1],[76,3],
-    [86,2],[86,1],[89,1.5],[86,.5],[83,1],[84,3],[88,3],
-    [84,1],[79,1],[76,1],[79,1.5],[77,.5],[74,1],[72,4],
-  ] },
-  joy: { beat: .38, measure: 4, chords: [48,55,48,55,48,55,55,48], notes: [
-    [76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],
-    [72,1],[72,1],[74,1],[76,1],[76,1.5],[74,.5],[74,2],
-    [76,1],[76,1],[77,1],[79,1],[79,1],[77,1],[76,1],[74,1],
-    [72,1],[72,1],[74,1],[76,1],[74,1.5],[72,.5],[72,2],
-  ] },
-  deck: { beat: .32, measure: 4, chords: [53,53,58,53,53,53,48,53,48,53,48,53,53,53,48,53], notes: [
-    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
-    [79,.5],[81,.5],[82,.5],[79,.5],[81,1.5],[79,.5],[77,1],[76,1],[77,2],
-    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
-    [79,.5],[81,.5],[82,.5],[79,.5],[81,1.5],[79,.5],[77,1],[76,1],[77,2],
-    [79,1.5],[81,.5],[82,1],[79,1],[81,1.5],[82,.5],[84,1],[79,1],
-    [81,.5],[83,.5],[84,1],[86,.5],[88,.5],[89,1],[88,1],[86,1],[84,2],
-    [84,1.5],[82,.5],[81,1],[79,1],[77,1],[79,1],[81,1],[77,1],
-    [86,.5],[86,.5],[86,.5],[86,.5],[84,1.5],[82,.5],[81,1],[79,1],[77,2],
-  ] },
+const builtinSongs = {
+  ambient: 'winter-ambient.mp3',
+  lawrence: 'winter-lawrence.mp3',
+  one: 'winter-one.mp3',
+  two: 'winter-two.mp3',
 };
-
-function makeCarol({ notes, beat, measure, chords }) {
-  const sampleRate = 22050;
-  const beats = notes.reduce((sum, note) => sum + note[1], 0);
-  const sampleCount = Math.ceil((beats * beat + .24) * sampleRate);
-  const samples = new Float32Array(sampleCount);
-  function bell(note, time, duration, volume, bass = false) {
-    const f = 440 * Math.pow(2, (note - 69) / 12);
-    const start = Math.round(time * sampleRate);
-    const count = Math.min(sampleCount - start, Math.ceil(duration * sampleRate));
-    for (let i = 0; i < count; i++) {
-      const at = i / sampleRate;
-      const p = at * Math.PI * 2 * f;
-      const envelope = Math.min(1, at / .009, (duration - at) / .09) * Math.exp(-at * (bass ? 3.7 : 4.8));
-      const tone = Math.sin(p) + Math.sin(p * 2.01) * .19 + Math.sin(p * 3.01) * .09 * Math.exp(-at * 6);
-      samples[start + i] += tone * envelope * volume;
-    }
-  }
-  let time = 0;
-  for (const [note, length] of notes) {
-    bell(note, time, length * beat + .16, .42);
-    time += length * beat;
-  }
-  for (let i = 0; i < beats; i += measure / 2) {
-    const chord = chords[Math.min(chords.length - 1, Math.floor(i / measure))];
-    bell(chord + (i % measure ? 7 : 0), i * beat, .63, .24, true);
-  }
-  const buffer = new ArrayBuffer(44 + sampleCount * 2);
-  const view = new DataView(buffer);
-  const word = (offset, name) => {
-    for (let i = 0; i < name.length; i++) view.setUint8(offset + i, name.charCodeAt(i));
-  };
-  word(0, 'RIFF');
-  view.setUint32(4, buffer.byteLength - 8, true);
-  word(8, 'WAVEfmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  word(36, 'data');
-  view.setUint32(40, sampleCount * 2, true);
-  for (let i = 0; i < sampleCount; i++) {
-    view.setInt16(44 + i * 2, Math.max(-1, Math.min(1, samples[i])) * 32767, true);
-  }
-  return new Blob([buffer], { type: 'audio/wav' });
-}
 
 function setupMusic(onEnergy) {
   const button = document.querySelector('#play');
@@ -1035,14 +960,23 @@ function setupMusic(onEnergy) {
   const state = document.querySelector('#track-state');
   const audio = new Audio();
   audio.loop = true;
-  let context, analyser, spectrum, sourceUrl, frame, energy = 0;
+  audio.preload = 'none';
+  audio.crossOrigin = 'anonymous';
+  let context, analyser, spectrum, sourceUrl, objectUrl, frame, energy = 0;
   let trackVersion = 0;
   let customFile;
 
-  function setSource(blob) {
+  function setSource() {
     audio.pause();
-    if (sourceUrl) URL.revokeObjectURL(sourceUrl);
-    sourceUrl = blob ? URL.createObjectURL(blob) : null;
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = null;
+    sourceUrl = null;
+    if (track.value === 'custom') {
+      if (customFile) sourceUrl = objectUrl = URL.createObjectURL(customFile);
+    } else if (builtinSongs[track.value]) {
+      const base = location.protocol === 'file:' ? 'https://cloud789922.github.io/1/' : location.href;
+      sourceUrl = new URL(builtinSongs[track.value], base).href;
+    }
     if (sourceUrl) audio.src = sourceUrl;
     else {
       audio.removeAttribute('src');
@@ -1065,11 +999,8 @@ function setupMusic(onEnergy) {
   }
 
   async function play() {
-    if (!sourceUrl) {
-      const source = track.value === 'custom' ? customFile : makeCarol(carols[track.value]);
-      if (!source) return;
-      setSource(source);
-    }
+    if (!sourceUrl) setSource();
+    if (!sourceUrl) return;
     const version = trackVersion;
     try {
       if (!context) {
@@ -1102,6 +1033,7 @@ function setupMusic(onEnergy) {
     sample();
   });
   audio.addEventListener('pause', () => {
+    if (!audio.paused) return;
     button.textContent = '▶';
     button.setAttribute('aria-label', '播放音乐');
     state.textContent = '已暂停';
@@ -1115,7 +1047,7 @@ function setupMusic(onEnergy) {
   });
   track.addEventListener('change', () => {
     const resume = !audio.paused;
-    setSource(null);
+    setSource();
     state.textContent = track.value === 'custom' ? '本地音乐 · 点击播放' : '内置音乐 · 点击播放';
     if (resume) void play();
   });
@@ -1127,7 +1059,7 @@ function setupMusic(onEnergy) {
     customOption.hidden = false;
     customOption.textContent = file.name;
     track.value = 'custom';
-    setSource(customFile);
+    setSource();
     void play();
   });
 }
@@ -1784,7 +1716,7 @@ shareButton.onclick = async () => {
     </section>
     <section class="panel music" id="music-panel" tabindex="-1">
       <h2><span class="section-icon" aria-hidden="true">♫</span>音乐律动</h2>
-      <div class="player"><button class="play" id="play" type="button" aria-label="播放音乐">▶</button><div><select id="track" aria-label="选择音乐"><option value="jingle">铃儿响叮当</option><option value="silent">平安夜</option><option value="joy">欢乐颂</option><option value="deck">装饰大厅</option><option value="custom" hidden>本地音乐</option></select><small id="track-state">内置音乐 · 点击播放</small></div><label class="upload" for="music-file">本地音乐<input id="music-file" type="file" accept="audio/*"></label></div>
+      <div class="player"><button class="play" id="play" type="button" aria-label="播放音乐">▶</button><div><select id="track" aria-label="选择音乐"><option value="ambient">氛围版</option><option value="lawrence">劳伦斯</option><option value="one">1号</option><option value="two">2号</option><option value="custom" hidden>本地音乐</option></select><small id="track-state">点击播放音乐</small></div><label class="upload" for="music-file">本地音乐<input id="music-file" type="file" accept="audio/*"></label></div>
     </section>
     <section class="panel photos" id="photo-panel">
       <h2><span class="section-icon" aria-hidden="true">▧</span>圣诞相册 <span class="photo-count" id="photo-count">0 张</span></h2>
