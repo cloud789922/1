@@ -139,10 +139,7 @@ dialog::backdrop { background: #04091bb3; }
 .panel h2 { display: flex; align-items: center; gap: 7px; font-size: 15px; margin: 0 0 11px; }
 .section-icon { color: var(--gold); }
 .field { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-height: 36px; font-size: 14px; }
-.field label, .personal-fields label { color: #d9e3f4; }
-.personal-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.personal-fields label { display: grid; gap: 4px; font-size: 13px; }
-.personal-fields label:last-child { grid-column: 1 / -1; }
+.field label { color: #d9e3f4; }
 input:not([type=file]), textarea, select { background: #0d182e; border: 1px solid #a3bbeb4a; color: var(--text); border-radius: 7px; padding: 7px 9px; }
 input:not([type=file]), textarea { min-width: 0; width: 100%; }
 textarea { resize: vertical; }
@@ -1693,8 +1690,9 @@ let shared = {};
 try { shared = JSON.parse(starter?.textContent || '{}') || {}; } catch {}
 const personalSuffix = shared.id ? '-' + shared.id : '';
 const settingsKey = 'winter-lights-settings' + personalSuffix;
-const defaultGreeting = '愿这个冬夜，有星光也有温暖。';
+const defaultMemoryMessage = '把这一刻留在星光里。';
 const blessingStream = $('#blessing-stream');
+const dedication = $('#dedication');
 const giftThemes = {
   style: [['💄','口红'],['👜','小挎包'],['👠','高跟鞋'],['🧴','香水'],['📿','项链'],['💝','护肤礼盒'],['💐','花束'],['🍷','红酒'],['🧸','抱抱熊'],['🧣','冬日围巾']],
   game: [['🎮','游戏手柄'],['🎧','耳机'],['⌨️','键盘'],['📷','相机'],['🛹','滑板'],['⚽','足球'],['👟','运动鞋'],['🧩','拼图']],
@@ -1706,6 +1704,8 @@ let settings = { ...shared.settings };
 try {
   settings = { ...settings, ...JSON.parse(localStorage.getItem(settingsKey) || '{}') };
 } catch {}
+delete settings.recipient;
+delete settings.sender;
 
 for (const [id, key] of Object.entries({
   palette: 'palette', shape: 'shape', gift: 'gift', density: 'density', 'custom-color': 'color', 'setting-scene': 'scenery',
@@ -1738,12 +1738,8 @@ function renderBlessings() {
   blessingStream.replaceChildren();
   if (!effects.scattered) return;
 
-  const recipient = $('#recipient').value.trim();
-  const sender = $('#sender').value.trim();
-  const messages = $('#dedication').value.split('\n').map(line => line.trim()).filter(Boolean);
-  if (!messages.length) messages.push(defaultGreeting);
-  const signature = [recipient && '送给 ' + recipient, sender && '来自 ' + sender].filter(Boolean).join(' · ');
-  if (signature) messages.push(signature);
+  const messages = dedication.value.split('\n').map(line => line.trim()).filter(Boolean);
+  if (!messages.length) messages.push(defaultMemoryMessage);
 
   const readable = document.createElement('ul');
   readable.className = 'blessings-readable';
@@ -1778,15 +1774,12 @@ function renderBlessings() {
   }
   blessingStream.append(lanes);
 }
-for (const id of ['recipient', 'sender', 'dedication']) {
-  const input = document.getElementById(id);
-  input.value = settings[id] || '';
-  input.addEventListener('input', () => {
-    settings[id] = input.value;
-    renderBlessings();
-    saveSettings();
-  });
-}
+dedication.value = settings.dedication || '';
+dedication.addEventListener('input', () => {
+  settings.dedication = dedication.value;
+  renderBlessings();
+  saveSettings();
+});
 
 function updateCountdown() {
   const now = new Date();
@@ -2309,7 +2302,7 @@ shareButton.onclick = async () => {
       <h1>Merry<br class="title-break"> Christmas</h1>
       <p class="countdown" id="christmas-countdown"></p>
     </header>
-    <section id="blessing-stream" class="blessing-stream" aria-label="祝福弹幕" hidden></section>
+    <section id="blessing-stream" class="blessing-stream" aria-label="纪念弹幕" hidden></section>
     <div class="stage-scene"><label for="setting-scene">冬夜场景</label><select id="setting-scene">
       <option value="forest">月夜雪林</option><option value="cabin">壁炉小屋</option><option value="aurora">极光山谷</option><option value="dawn">晨曦雪原</option>
     </select><button id="fullscreen" type="button" hidden>全屏</button></div>
@@ -2331,15 +2324,12 @@ shareButton.onclick = async () => {
   </section>
 </main>
 <dialog id="studio" class="studio" aria-labelledby="studio-title">
-  <header class="studio-header"><div><small>冬夜星树</small><h2 id="studio-title">装扮与祝福</h2></div><button id="close-studio" type="button" aria-label="关闭装扮">×</button></header>
+  <header class="studio-header"><div><small>冬夜星树</small><h2 id="studio-title">装扮与纪念</h2></div><button id="close-studio" type="button" aria-label="关闭装扮">×</button></header>
   <div class="sidebar">
     <section class="panel">
-      <h2>写好你的祝福</h2>
-      <div class="personal-fields">
-        <label>送给<input id="recipient" maxlength="28" placeholder="收礼人的名字"></label>
-        <label>来自<input id="sender" maxlength="28" placeholder="你的名字"></label>
-        <label>祝福弹幕<textarea id="dedication" maxlength="1200" rows="4" placeholder="输入祝福文字，每行一条" aria-describedby="blessing-hint"></textarea><small id="blessing-hint">散开时显示，留空使用默认祝福。</small></label>
-      </div>
+      <h2><label for="dedication">纪念弹幕</label></h2>
+      <textarea id="dedication" maxlength="1200" rows="4" placeholder="写下想纪念的话，每行一条" aria-describedby="blessing-hint"></textarea>
+      <p class="hint" id="blessing-hint">散开时显示。</p>
     </section>
     <section class="panel">
       <h2>礼物清单</h2>
@@ -2375,7 +2365,7 @@ shareButton.onclick = async () => {
     </section>
     <section class="panel share-panel">
       <button id="download-wish" class="download-wish" type="button">下载专属网页</button>
-      <p class="hint">祝福、装扮和已加入的照片会随网页文件一起分享。</p>
+      <p class="hint">纪念弹幕、装扮和已加入的照片会随网页文件一起分享。</p>
       <p id="share-status" class="hint" aria-live="polite"></p>
     </section>
   </div>
