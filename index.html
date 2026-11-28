@@ -479,9 +479,13 @@ function drawSleighFlight(t) {
   ctx.rotate(-.09 + Math.cos(progress * Math.PI) * .09);
   drawSleighTrail(t, opacity);
 
-  ctx.globalAlpha = opacity * .73;
-  ctx.fillStyle = effects.scenery === 'dawn' ? '#392c45' : '#0d1528';
-  ctx.strokeStyle = effects.scenery === 'dawn' ? '#392c45' : '#0d1528';
+  const moonlit = ctx.createLinearGradient(0, -13, 0, 6);
+  moonlit.addColorStop(0, '#dfc5a0');
+  moonlit.addColorStop(.52, '#9f8168');
+  moonlit.addColorStop(1, effects.scenery === 'dawn' ? '#654b57' : '#3e3a49');
+  ctx.globalAlpha = opacity * .88;
+  ctx.fillStyle = moonlit;
+  ctx.strokeStyle = effects.scenery === 'dawn' ? '#a08173' : '#a18d79';
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.lineWidth = .65;
@@ -503,25 +507,25 @@ function drawSleighTrail(t, opacity) {
   const tip = Math.sin(t * 2.5) * .9;
   const gold = ctx.createLinearGradient(-91, 0, -43, 0);
   gold.addColorStop(0, '#dab17a00');
-  gold.addColorStop(.36, '#e4bd853b');
-  gold.addColorStop(.81, '#f3ce9696');
-  gold.addColorStop(1, '#ffe2b1b3');
-  ctx.globalAlpha = opacity * .76;
+  gold.addColorStop(.36, '#e4bd8554');
+  gold.addColorStop(.81, '#f3ce96b5');
+  gold.addColorStop(1, '#ffe2b1e0');
+  ctx.globalAlpha = opacity * .90;
   ctx.strokeStyle = gold;
   ctx.lineCap = 'round';
-  ctx.lineWidth = 1.25;
+  ctx.lineWidth = 1.65;
   ctx.beginPath();
   ctx.moveTo(-91, 6.3 + tip);
   ctx.bezierCurveTo(-74, 4.0 + tip, -57, 6.8, -43, 3.1);
   ctx.stroke();
   ctx.lineWidth = 3.7;
-  ctx.globalAlpha = opacity * .17;
+  ctx.globalAlpha = opacity * .24;
   ctx.stroke();
 
   ctx.fillStyle = '#f5d29a';
   for (let i = 0; i < 6; i++) {
     const flicker = .64 + Math.sin(t * 6 + i * 3.4) * .36;
-    ctx.globalAlpha = opacity * (.37 - i * .052) * flicker;
+    ctx.globalAlpha = opacity * (.53 - i * .068) * flicker;
     ctx.beginPath();
     ctx.arc(-47 - i * 6.3, 4.1 + Math.sin(t * 3 + i) * 1.45 + i * .20, Math.max(.35, .94 - i * .11), 0, tau);
     ctx.fill();
@@ -564,9 +568,9 @@ function drawFlyingDeer(stride, opacity) {
   ctx.lineTo(7.2, -9.6);
   ctx.stroke();
 
-  ctx.globalAlpha = opacity * .43;
-  ctx.strokeStyle = '#dbc6a4';
-  ctx.lineWidth = .82;
+  ctx.globalAlpha = opacity * .65;
+  ctx.strokeStyle = '#f2d9b2';
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(-4.8, -.08);
   ctx.quadraticCurveTo(-1.1, -1.37, 1.83, -.58);
@@ -599,9 +603,9 @@ function drawSleighBody(opacity) {
   ctx.moveTo(-46, 5.5);
   ctx.quadraticCurveTo(-27.6, 6.4, -26.8, 3.4);
   ctx.stroke();
-  ctx.globalAlpha = opacity * .51;
-  ctx.strokeStyle = '#eec798';
-  ctx.lineWidth = .86;
+  ctx.globalAlpha = opacity * .74;
+  ctx.strokeStyle = '#f6d5a0';
+  ctx.lineWidth = 1.1;
   ctx.beginPath();
   ctx.moveTo(-46.2, 5.28);
   ctx.quadraticCurveTo(-28.6, 6.1, -27, 3.3);
